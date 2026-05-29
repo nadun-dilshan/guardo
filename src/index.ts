@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { MemoryStore } from "./adapters/memory";
-import { ConsoleNotifier } from "./notifiers";
+import { ConsoleNotifier, NodemailerNotifier } from "./notifiers";
 import { RateLimiter } from "./core/ratelimit";
 import { OtpModule } from "./core/otp";
 import { JwtModule } from "./core/jwt";
@@ -12,8 +12,6 @@ import { SessionModule } from "./core/session";
 import { AuthModule } from "./core/auth";
 import { MiddlewareModule } from "./middleware";
 import type { AuthConfig } from "./types";
-
-export type { AuthConfig } from "./types";
 export type {
   User,
   Session,
@@ -34,7 +32,14 @@ export type {
 // Re-export adapters & notifiers for convenience
 export { MemoryStore } from "./adapters/memory";
 export { RedisStore } from "./adapters/redis";
-export { ConsoleNotifier, BaseNotifier, MultiChannelNotifier, createNotifier } from "./notifiers";
+export {
+  ConsoleNotifier,
+  BaseNotifier,
+  MultiChannelNotifier,
+  createNotifier,
+  NodemailerNotifier,
+} from "./notifiers";
+export type { SmtpConfig, EmailNotifierOptions } from "./notifiers";
 
 // Re-export custom error classes
 export { AuthError } from "./core/auth";
@@ -75,7 +80,14 @@ export function createAuth(config: AuthConfig): {
   // ── Defaults ─────────────────────────────────────────────────
 
   const store = config.store ?? new MemoryStore();
-  const notifier = config.notifier ?? new ConsoleNotifier();
+
+  // Notifier priority:
+  //   1. config.notifier  — fully custom (ConsoleNotifier, custom class, etc.)
+  //   2. config.email     — NodemailerNotifier with caller-supplied options
+  //   3. default          — NodemailerNotifier with Ethereal (no config needed)
+  const notifier =
+    config.notifier ??
+    new NodemailerNotifier(config.email ?? {});
 
   const otpLength = config.otp?.length ?? 6;
   const otpExpiry = config.otp?.expiry ?? 300;

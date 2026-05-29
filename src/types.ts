@@ -160,6 +160,15 @@ export interface AuthConfig {
   notifier?: Notifier;
   rateLimit?: RateLimitConfig;
   /**
+   * Shorthand email config — passed straight to NodemailerNotifier.
+   * If `notifier` is also set, `notifier` wins.
+   * If neither is set, defaults to Ethereal (dev fake inbox).
+   *
+   * @example
+   * email: { smtp: { host: "smtp.gmail.com", user: "x", pass: "y" }, from: "noreply@myapp.com" }
+   */
+  email?: import("./notifiers/email").EmailNotifierOptions;
+  /**
    * Resolve a User object from an identifier.
    * Useful so middleware can attach the full user to req.user.
    * If not provided, only the JWT payload is returned.

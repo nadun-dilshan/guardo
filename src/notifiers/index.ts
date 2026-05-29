@@ -4,6 +4,8 @@
 // ─────────────────────────────────────────────────────────────
 
 import type { Notifier, NotifyPayload, OtpChannel } from "../types";
+export { NodemailerNotifier } from "./email";
+export type { SmtpConfig, EmailNotifierOptions } from "./email";
 
 // ── Console Notifier ──────────────────────────────────────────
 // Default for development — logs OTPs to stdout instead of
