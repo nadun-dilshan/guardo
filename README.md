@@ -1,11 +1,21 @@
-# guardo
+<div align="center">
 
-Production-ready authentication engine for **Node.js** and **Next.js**,
-written in TypeScript.
+<h1>🔐 guardo</h1>
+
+<p>Production-ready authentication engine for <strong>Node.js</strong> and <strong>Next.js</strong>, written in TypeScript.</p>
+
+[![npm version](https://img.shields.io/npm/v/guardo?color=6c63ff&style=flat-square)](https://www.npmjs.com/package/guardo)
+[![npm downloads](https://img.shields.io/npm/dm/guardo?color=38bdf8&style=flat-square)](https://www.npmjs.com/package/guardo)
+[![license](https://img.shields.io/npm/l/guardo?color=34d399&style=flat-square)](./LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6?style=flat-square)](https://www.typescriptlang.org)
+
+<p>OTP login · JWT tokens · Multi-device sessions · Express &amp; Next.js middleware — all wired together.</p>
+
+</div>
 
 ---
 
-## What you get
+## Features
 
 | Feature | Details |
 |---------|---------|
@@ -25,11 +35,10 @@ written in TypeScript.
 
 ```bash
 npm install guardo
-# or
-pnpm add guardo
-```
 
-> **Note:** Nodemailer is included for email notifications. For Redis support, install `ioredis` separately.
+# Optional: Redis adapter for production
+npm install ioredis
+```
 
 ---
 
@@ -39,17 +48,13 @@ pnpm add guardo
 import { createAuth } from "guardo";
 
 const auth = createAuth({
-  jwt: {
-    secret: process.env.JWT_SECRET!,
-    accessTokenTTL: "15m",   // default
-    refreshTokenTTL: "7d",   // default
-  },
+  jwt: { secret: process.env.JWT_SECRET! },
 });
 
-// Step 1 — send OTP
+// Step 1 — Send OTP
 await auth.otp.send({ identifier: "user@example.com" });
 
-// Step 2 — verify OTP + log in
+// Step 2 — Verify OTP + login
 const { user, accessToken, refreshToken, sessionId } =
   await auth.auth.loginWithOtp({
     identifier: "user@example.com",
@@ -57,11 +62,13 @@ const { user, accessToken, refreshToken, sessionId } =
     meta: { device: "chrome-mac", ip: req.ip },
   });
 
-// Step 3 — protect routes
+// Step 3 — Protect routes
 app.get("/me", auth.middleware.express(), (req, res) => {
   res.json(req.user);
 });
 ```
+
+> **In development**, OTPs are printed to the console automatically — no email setup needed.
 
 ---
 
@@ -69,38 +76,34 @@ app.get("/me", auth.middleware.express(), (req, res) => {
 
 ```ts
 const auth = createAuth({
-  // ── Required ─────────────────────────────────────────────
+  // Required
   jwt: {
     secret: "at-least-16-chars",
-    accessTokenTTL: "15m",
-    refreshTokenTTL: "7d",
-    extraClaims: { iss: "my-app" }, // embedded in every token
+    accessTokenTTL:  "15m",   // default
+    refreshTokenTTL: "7d",    // default
+    extraClaims: { iss: "my-app" },
   },
 
-  // ── OTP ──────────────────────────────────────────────────
+  // OTP settings
   otp: {
     length: 6,     // default
-    expiry: 300,   // seconds — default 5 minutes
+    expiry: 300,   // seconds, default 5 minutes
   },
 
-  // ── Storage ───────────────────────────────────────────────
-  store: new RedisStore(redisClient), // default: MemoryStore
+  // Storage (default: in-memory)
+  store: new RedisStore(redisClient),
 
-  // ── Notifications ─────────────────────────────────────────
-  notifier: myEmailNotifier,         // default: ConsoleNotifier
+  // Notifications (default: console logger)
+  notifier: myEmailNotifier,
 
-  // ── Rate limits ───────────────────────────────────────────
+  // Rate limiting
   rateLimit: {
-    otpSend:   { max: 5,  windowSeconds: 60 },  // default
-    otpVerify: { max: 10, windowSeconds: 60 },  // default
+    otpSend:   { max: 5,  windowSeconds: 60 },
+    otpVerify: { max: 10, windowSeconds: 60 },
   },
 
-  // ── User resolution ───────────────────────────────────────
-  // Called after OTP verification and on every authenticated request.
-  // Attach your DB call here so req.user is always a full User object.
-  resolveUser: async (identifier) => {
-    return db.users.findByEmail(identifier);
-  },
+  // Optional: resolve full user from DB after OTP verification
+  resolveUser: async (identifier) => db.users.findByEmail(identifier),
 });
 ```
 
@@ -108,30 +111,17 @@ const auth = createAuth({
 
 ## OTP Module — `auth.otp`
 
-### `send(opts)`
-
 ```ts
-await auth.otp.send({
-  identifier: "user@example.com",
-  channel: "email", // or "sms" — default "email"
-});
-// Returns: { expiresInSeconds: 300 }
-```
+// Send OTP
+await auth.otp.send({ identifier: "user@example.com", channel: "email" });
+// → { expiresInSeconds: 300 }
 
-### `verify(opts)`
+// Verify OTP
+const result = await auth.otp.verify({ identifier: "user@example.com", otp: "123456" });
+// → { success: true, verified: true }
+// → { success: false, verified: false, error: "Invalid OTP. 4 attempt(s) remaining." }
 
-```ts
-const result = await auth.otp.verify({
-  identifier: "user@example.com",
-  otp: "123456",
-});
-// { success: true, verified: true }
-// { success: false, verified: false, error: "Invalid OTP. 4 attempt(s) remaining." }
-```
-
-### `exists(identifier)`
-
-```ts
+// Check if a pending OTP exists
 const pending = await auth.otp.exists("user@example.com"); // boolean
 ```
 
@@ -139,40 +129,19 @@ const pending = await auth.otp.exists("user@example.com"); // boolean
 
 ## Auth Module — `auth.auth`
 
-### `loginWithOtp(opts)` — full login flow
-
 ```ts
-const result = await auth.auth.loginWithOtp({
-  identifier: "user@example.com",
-  otp: "123456",
-  meta: { device: "iPhone 15", ip: "1.2.3.4" },
-});
+// Login (OTP verify + session + tokens in one step)
+const { user, accessToken, refreshToken, sessionId } =
+  await auth.auth.loginWithOtp({ identifier, otp, meta: { device, ip } });
 
-// result:
-{
-  user: { id: "123", email: "user@example.com" },
-  accessToken: "eyJ...",
-  refreshToken: "eyJ...",
-  sessionId: "sess_abc123",
-}
-```
-
-### `refreshTokens(refreshToken)` — rotate tokens
-
-```ts
+// Refresh tokens (rotation — old session revoked)
 const { accessToken, refreshToken, sessionId } =
   await auth.auth.refreshTokens(oldRefreshToken);
-```
 
-### `logout(sessionId)` — single device
-
-```ts
+// Logout from one device
 await auth.auth.logout("sess_abc123");
-```
 
-### `logoutAll(userId)` — all devices
-
-```ts
+// Logout from all devices
 const count = await auth.auth.logoutAll("user-123"); // → 3
 ```
 
@@ -182,15 +151,13 @@ const count = await auth.auth.logoutAll("user-123"); // → 3
 
 ```ts
 // Issue tokens manually
-const accessToken  = auth.jwt.issueAccessToken(user, sessionId);
-const refreshToken = auth.jwt.issueRefreshToken(user, sessionId);
-const { accessToken, refreshToken } = auth.jwt.issueTokenPair(user, sessionId);
+const pair = auth.jwt.issueTokenPair(user, sessionId);
 
-// Verify
-const payload = auth.jwt.verifyAccessToken(token);   // throws if invalid
-const payload = auth.jwt.verifyRefreshToken(token);  // throws if invalid
+// Verify (throws on invalid/expired)
+const payload = auth.jwt.verifyAccessToken(token);
+const payload = auth.jwt.verifyRefreshToken(token);
 
-// Decode without verifying (e.g. to read sub from expired token)
+// Decode without verifying
 const payload = auth.jwt.decode(token);
 ```
 
@@ -199,48 +166,24 @@ const payload = auth.jwt.decode(token);
 ## Session Module — `auth.session`
 
 ```ts
-// Create
-const session = await auth.session.create(userId, {
-  device: "Safari on iPad",
-  ip: "1.2.3.4",
-});
-
-// Get one
-const session = await auth.session.get("sess_abc123");
-
-// List all for a user
-const sessions = await auth.session.list(userId);
-// Returns newest-first
-
-// Touch (keep alive / update lastActiveAt)
-await auth.session.touch("sess_abc123");
-
-// Revoke one
-await auth.session.revoke("sess_abc123");
-
-// Revoke all → returns count
-const n = await auth.session.revokeAll(userId);
+const session = await auth.session.create(userId, { device, ip });
+const sessions = await auth.session.list(userId);   // newest first
+await auth.session.touch("sess_abc123");             // update lastActiveAt
+await auth.session.revoke("sess_abc123");            // single device
+const n = await auth.session.revokeAll(userId);      // all devices
 ```
 
 ---
 
 ## Middleware
 
-### Express — `auth.middleware.express()`
-
-Attach to any route to require a valid JWT. Adds `req.user` and `req.session`.
+### Express
 
 ```ts
-app.get("/profile", auth.middleware.express(), (req, res) => {
-  res.json(req.user);
-});
-```
+// JWT guard — populates req.user and req.session
+app.get("/profile", auth.middleware.express(), handler);
 
-### Express — `auth.middleware.role(roles)`
-
-Must be placed **after** `express()`.
-
-```ts
+// Role-based access (must come after express())
 app.delete(
   "/admin/users/:id",
   auth.middleware.express(),
@@ -249,21 +192,15 @@ app.delete(
 );
 ```
 
-### Next.js Edge Middleware — `auth.middleware.nextjs()`
+### Next.js Edge Middleware
 
 ```ts
-// middleware.ts (project root)
-import { createAuth } from "guardo";
-const auth = createAuth({ jwt: { secret: process.env.JWT_SECRET! } });
-
+// middleware.ts
 export const middleware = auth.middleware.nextjs();
-
-export const config = {
-  matcher: ["/api/:path*", "/dashboard/:path*"],
-};
+export const config = { matcher: ["/api/:path*", "/dashboard/:path*"] };
 ```
 
-### Next.js App Router Route Wrapper — `auth.middleware.nextjsRoute()`
+### Next.js App Router Route Wrapper
 
 ```ts
 // app/api/me/route.ts
@@ -276,7 +213,7 @@ export const GET = auth.middleware.nextjsRoute(async (req, user) => {
 
 ## Storage Adapters
 
-### In-Memory (default — dev/test only)
+### In-Memory (dev/test)
 
 ```ts
 import { MemoryStore } from "guardo";
@@ -286,21 +223,14 @@ store.clear(); // wipe in tests
 
 ### Redis (production)
 
-Requires [`ioredis`](https://github.com/redis/ioredis) as a peer dep.
-
 ```ts
 import { RedisStore } from "guardo";
 import Redis from "ioredis";
 
-const redis = new Redis(process.env.REDIS_URL);
-const store = new RedisStore(redis);
-
-const auth = createAuth({ jwt: { secret: "..." }, store });
+const store = new RedisStore(new Redis(process.env.REDIS_URL));
 ```
 
 ### Custom Store
-
-Implement the `StorageAdapter` interface:
 
 ```ts
 import type { StorageAdapter } from "guardo";
@@ -317,89 +247,39 @@ class MongoStore implements StorageAdapter {
 
 ## Notifiers
 
-Out of the box: **Console** (dev) and **Nodemailer** (dev + production). Custom notifiers welcome.
-
-### Console (default — dev only)
-
-Simple development notifier that logs OTPs to stdout — useful for local development and tests (does not send real emails/SMS).
+### Console (dev)
 
 ```ts
-import { ConsoleNotifier, createAuth } from "guardo";
-
-const auth = createAuth({
-  jwt: { secret: "..." },
-  notifier: new ConsoleNotifier(),
-});
-// Example log: [guardo] OTP for user@example.com via email: 483920 (expires in 300s)
+import { ConsoleNotifier } from "guardo";
+const auth = createAuth({ jwt: { secret: "..." }, notifier: new ConsoleNotifier() });
+// Logs: [guardo] OTP for user@example.com via email: 483920 (expires in 300s)
 ```
 
-For production use, prefer `NodemailerNotifier`, `SendGridNotifier`, or a custom notifier implementation.
-
-### Nodemailer (email — dev + production)
-
-Send OTP emails via Nodemailer. Two modes:
-- **Ethereal** (no config) — auto-creates a test inbox; emails appear in browser preview
-- **Real SMTP** — connect to Gmail, SendGrid, Resend, or any SMTP provider
-
-#### Ethereal (dev/test)
+### Nodemailer — Ethereal (dev)
 
 ```ts
-import { NodemailerNotifier, createAuth } from "guardo/notifiers";
-
-const auth = createAuth({
-  jwt: { secret: "..." },
-  notifier: new NodemailerNotifier(),
-  // No smtp config → auto-creates Ethereal test account
-  // Outputs credentials & preview URL to console
-});
+import { NodemailerNotifier } from "guardo";
+// No config → auto-creates Ethereal test inbox, logs preview URL
+const auth = createAuth({ jwt: { secret: "..." }, notifier: new NodemailerNotifier() });
 ```
 
-Console output:
-```
-┌─────────────────────────────────────────────┐
-│  📬  Ethereal test inbox created              │
-│  User : <generated-email>@ethereal.email    │
-│  Pass : <generated-password>                │
-│  Preview emails at https://ethereal.email   │
-└─────────────────────────────────────────────┘
-```
-
-#### Real SMTP (production)
+### Nodemailer — Real SMTP (production)
 
 ```ts
-import { NodemailerNotifier, createAuth } from "guardo/notifiers";
-
 const auth = createAuth({
   jwt: { secret: "..." },
   notifier: new NodemailerNotifier({
     smtp: {
-      host: "smtp.gmail.com",        // or sendgrid, resend, etc.
+      host: "smtp.gmail.com",
       port: 587,
-      secure: false,                 // STARTTLS
-      user: process.env.SMTP_USER,   // gmail address or API user
-      pass: process.env.SMTP_PASS,   // gmail app password or API key
+      secure: false,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
     },
     from: "noreply@myapp.com",
     subject: "Your login code",
   }),
 });
-```
-
-#### Custom email templates
-
-```ts
-const notifier = new NodemailerNotifier({
-  smtp: { host: "...", user: "...", pass: "..." },
-  buildHtml: (code, expiresInSeconds) => `
-    <h2>Sign in to My App</h2>
-    <p>Your code: <strong>${code}</strong></p>
-    <p>Valid for ${Math.round(expiresInSeconds! / 60)} minutes.</p>
-  `,
-  buildText: (code, expiresInSeconds) =>
-    `Sign in code: ${code}\nValid for ${Math.round(expiresInSeconds! / 60)} minutes.`,
-});
-
-const auth = createAuth({ jwt: { secret: "..." }, notifier });
 ```
 
 ### Custom Notifier
@@ -409,60 +289,24 @@ import type { Notifier, NotifyPayload } from "guardo";
 
 class SendGridNotifier implements Notifier {
   async sendOTP({ to, code, expiresInSeconds }: NotifyPayload) {
-    await sendgrid.send({
-      to,
-      subject: "Your verification code",
-      text: `Your code is ${code}. It expires in ${expiresInSeconds}s.`,
-    });
+    await sendgrid.send({ to, subject: "Your code", text: `Code: ${code}` });
   }
 }
-
-const auth = createAuth({
-  jwt: { secret: "..." },
-  notifier: new SendGridNotifier(),
-});
 ```
 
-### Multi-Channel
+### Multi-Channel (email + SMS)
 
 ```ts
 import { MultiChannelNotifier } from "guardo";
-
-const auth = createAuth({
-  jwt: { secret: "..." },
-  notifier: new MultiChannelNotifier({
-    email: new SendGridNotifier(),
-    sms:   new TwilioNotifier(),
-  }),
-});
-```
-
-### Functional shorthand
-
-```ts
-import { createNotifier } from "guardo";
-
-const auth = createAuth({
-  jwt: { secret: "..." },
-  notifier: createNotifier(async ({ to, code }) => {
-    console.log(`Send ${code} to ${to}`);
-  }),
+const notifier = new MultiChannelNotifier({
+  email: new SendGridNotifier(),
+  sms:   new TwilioNotifier(),
 });
 ```
 
 ---
 
 ## Error Handling
-
-All errors thrown by the library extend `Error` and have a `.name` property:
-
-| Class | Thrown by |
-|-------|-----------|
-| `AuthError` | `auth.auth.*` — bad OTP, revoked session, user not found |
-| `RateLimitError` | `auth.otp.send()` — has `.retryAfterSeconds` |
-| `TokenTypeError` | `auth.jwt.verify*()` — wrong token type |
-| `JsonWebTokenError` | `auth.jwt.verify*()` — invalid signature |
-| `TokenExpiredError` | `auth.jwt.verify*()` — expired token |
 
 ```ts
 import { AuthError, RateLimitError } from "guardo";
@@ -478,16 +322,24 @@ try {
 }
 ```
 
+| Error Class | Thrown by | Extra |
+|-------------|-----------|-------|
+| `AuthError` | `auth.auth.*` | — |
+| `RateLimitError` | `auth.otp.send()` | `.retryAfterSeconds` |
+| `TokenTypeError` | `auth.jwt.verify*()` | — |
+| `JsonWebTokenError` | `auth.jwt.verify*()` | — |
+| `TokenExpiredError` | `auth.jwt.verify*()` | — |
+
 ---
 
-## Security Notes
+## Security
 
-- OTPs are stored as **SHA-256 hashes** — plaintext is never persisted.
-- OTP comparison uses `crypto.timingSafeEqual` to prevent timing attacks.
-- Each OTP is **single-use** — consumed on successful verification.
-- After **5 failed attempts**, the OTP is invalidated automatically.
-- Refresh token rotation creates a new session on every refresh.
-- Sessions are TTL-bound and tied to refresh token lifetime.
+- OTPs stored as **SHA-256 hashes** — plaintext is never persisted
+- OTP comparison uses `crypto.timingSafeEqual` to prevent timing attacks
+- Each OTP is **single-use** — consumed on successful verification
+- After **5 failed attempts**, the OTP is automatically invalidated
+- Refresh token **rotation** — new session on every refresh
+- Sessions are **TTL-bound** and expire with the refresh token
 
 ---
 
@@ -500,3 +352,13 @@ try {
 - [ ] Device fingerprinting
 - [ ] Risk scoring
 - [ ] Analytics hooks
+
+---
+
+## Contributing
+
+Issues and PRs welcome! See the [GitHub repo](https://github.com/nadun-dilshan) to get started.
+
+## License
+
+MIT © [nadun-dilshan](https://github.com/nadun-dilshan)
