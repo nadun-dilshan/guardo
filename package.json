@@ -1,0 +1,51 @@
+{
+  "name": "guardo", 
+  "version": "1.0.0",
+  "description": "Production-ready authentication engine for Node.js & Next.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./adapters": {
+      "require": "./dist/adapters/index.js",
+      "import": "./dist/adapters/index.mjs",
+      "types": "./dist/adapters/index.d.ts"
+    },
+    "./notifiers": {
+      "require": "./dist/notifiers/index.js",
+      "import": "./dist/notifiers/index.mjs",
+      "types": "./dist/notifiers/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest"
+  },
+  "keywords": ["auth", "jwt", "otp", "session", "nextjs", "express"],
+  "license": "MIT",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "express": ">=4.0.0",
+    "next": ">=13.0.0",
+    "ioredis": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "express": { "optional": true },
+    "next": { "optional": true },
+    "ioredis": { "optional": true }
+  }
+}
