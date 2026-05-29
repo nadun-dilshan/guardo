@@ -3,7 +3,7 @@
 //  Generates, stores (hashed), and verifies OTP codes.
 // ─────────────────────────────────────────────────────────────
 
-import crypto from "crypto";
+import crypto from "node:crypto";
 import type {
   StorageAdapter,
   Notifier,

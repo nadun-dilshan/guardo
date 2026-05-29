@@ -1,9 +1,8 @@
 {
   "name": "guardo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Production-ready authentication engine for Node.js & Next.js",
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -25,7 +24,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "jest"
+    "test": "jest",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "auth",
@@ -37,7 +37,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "crypto": "^1.0.1",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^8.0.9"
   },
@@ -53,14 +52,12 @@
     "next": ">=13.0.0"
   },
   "peerDependenciesMeta": {
-    "express": {
-      "optional": true
-    },
-    "next": {
-      "optional": true
-    },
-    "ioredis": {
-      "optional": true
-    }
-  }
+    "express": { "optional": true },
+    "next": { "optional": true },
+    "ioredis": { "optional": true }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
 }

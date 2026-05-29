@@ -3,7 +3,7 @@
 //  Multi-device session management backed by StorageAdapter.
 // ─────────────────────────────────────────────────────────────
 
-import crypto from "crypto";
+import crypto from "node:crypto";
 import type { StorageAdapter, Session, SessionMeta } from "../types";
 
 const SESSION_KEY = (sessionId: string) => `session:${sessionId}`;
