@@ -3,8 +3,6 @@
 Production-ready authentication engine for **Node.js** and **Next.js**,
 written in TypeScript.
 
-**Last commit (e2f035f):** 2026-05-29 12:49:37 +0530 — feat: add NodemailerNotifier for email OTP notifications and update dependencies
-
 ---
 
 ## What you get
