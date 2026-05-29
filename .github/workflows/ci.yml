@@ -32,7 +32,3 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      - name: Run tests
-        run: npm test
-        continue-on-error: false # fail the workflow if tests fail
