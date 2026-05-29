@@ -9,7 +9,7 @@
 [![license](https://img.shields.io/npm/l/guardo?color=34d399&style=flat-square)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6?style=flat-square)](https://www.typescriptlang.org)
 
-<p>OTP login · JWT tokens · Multi-device sessions · Express &amp; Next.js middleware — all wired together.</p>
+<p>OTP login · JWT tokens · Multi-device sessions · Express &amp; Next.js middleware - all wired together.</p>
 
 </div>
 
@@ -51,10 +51,10 @@ const auth = createAuth({
   jwt: { secret: process.env.JWT_SECRET! },
 });
 
-// Step 1 — Send OTP
+// Step 1 - Send OTP
 await auth.otp.send({ identifier: "user@example.com" });
 
-// Step 2 — Verify OTP + login
+// Step 2 - Verify OTP + login
 const { user, accessToken, refreshToken, sessionId } =
   await auth.auth.loginWithOtp({
     identifier: "user@example.com",
@@ -62,13 +62,13 @@ const { user, accessToken, refreshToken, sessionId } =
     meta: { device: "chrome-mac", ip: req.ip },
   });
 
-// Step 3 — Protect routes
+// Step 3 - Protect routes
 app.get("/me", auth.middleware.express(), (req, res) => {
   res.json(req.user);
 });
 ```
 
-> **In development**, OTPs are printed to the console automatically — no email setup needed.
+> **In development**, OTPs are printed to the console automatically - no email setup needed.
 
 ---
 
@@ -109,7 +109,7 @@ const auth = createAuth({
 
 ---
 
-## OTP Module — `auth.otp`
+## OTP Module - `auth.otp`
 
 ```ts
 // Send OTP
@@ -127,14 +127,14 @@ const pending = await auth.otp.exists("user@example.com"); // boolean
 
 ---
 
-## Auth Module — `auth.auth`
+## Auth Module - `auth.auth`
 
 ```ts
 // Login (OTP verify + session + tokens in one step)
 const { user, accessToken, refreshToken, sessionId } =
   await auth.auth.loginWithOtp({ identifier, otp, meta: { device, ip } });
 
-// Refresh tokens (rotation — old session revoked)
+// Refresh tokens (rotation - old session revoked)
 const { accessToken, refreshToken, sessionId } =
   await auth.auth.refreshTokens(oldRefreshToken);
 
@@ -147,7 +147,7 @@ const count = await auth.auth.logoutAll("user-123"); // → 3
 
 ---
 
-## JWT Module — `auth.jwt`
+## JWT Module - `auth.jwt`
 
 ```ts
 // Issue tokens manually
@@ -163,7 +163,7 @@ const payload = auth.jwt.decode(token);
 
 ---
 
-## Session Module — `auth.session`
+## Session Module - `auth.session`
 
 ```ts
 const session = await auth.session.create(userId, { device, ip });
@@ -180,7 +180,7 @@ const n = await auth.session.revokeAll(userId);      // all devices
 ### Express
 
 ```ts
-// JWT guard — populates req.user and req.session
+// JWT guard - populates req.user and req.session
 app.get("/profile", auth.middleware.express(), handler);
 
 // Role-based access (must come after express())
@@ -255,7 +255,7 @@ const auth = createAuth({ jwt: { secret: "..." }, notifier: new ConsoleNotifier(
 // Logs: [guardo] OTP for user@example.com via email: 483920 (expires in 300s)
 ```
 
-### Nodemailer — Ethereal (dev)
+### Nodemailer - Ethereal (dev)
 
 ```ts
 import { NodemailerNotifier } from "guardo";
@@ -263,7 +263,7 @@ import { NodemailerNotifier } from "guardo";
 const auth = createAuth({ jwt: { secret: "..." }, notifier: new NodemailerNotifier() });
 ```
 
-### Nodemailer — Real SMTP (production)
+### Nodemailer - Real SMTP (production)
 
 ```ts
 const auth = createAuth({
@@ -324,21 +324,21 @@ try {
 
 | Error Class | Thrown by | Extra |
 |-------------|-----------|-------|
-| `AuthError` | `auth.auth.*` | — |
+| `AuthError` | `auth.auth.*` | - |
 | `RateLimitError` | `auth.otp.send()` | `.retryAfterSeconds` |
-| `TokenTypeError` | `auth.jwt.verify*()` | — |
-| `JsonWebTokenError` | `auth.jwt.verify*()` | — |
-| `TokenExpiredError` | `auth.jwt.verify*()` | — |
+| `TokenTypeError` | `auth.jwt.verify*()` | - |
+| `JsonWebTokenError` | `auth.jwt.verify*()` | - |
+| `TokenExpiredError` | `auth.jwt.verify*()` | - |
 
 ---
 
 ## Security
 
-- OTPs stored as **SHA-256 hashes** — plaintext is never persisted
+- OTPs stored as **SHA-256 hashes** - plaintext is never persisted
 - OTP comparison uses `crypto.timingSafeEqual` to prevent timing attacks
-- Each OTP is **single-use** — consumed on successful verification
+- Each OTP is **single-use** - consumed on successful verification
 - After **5 failed attempts**, the OTP is automatically invalidated
-- Refresh token **rotation** — new session on every refresh
+- Refresh token **rotation** - new session on every refresh
 - Sessions are **TTL-bound** and expire with the refresh token
 
 ---
