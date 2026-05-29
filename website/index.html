@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0c0e14">
+<meta name="description" content="guardo - A complete authentication engine for Node.js and Next.js with OTP login, JWT tokens, multi-device sessions, and middleware. Production-ready TypeScript SDK with email notifications and Redis support.">
+<meta name="keywords" content="authentication, auth, JWT, OTP, Node.js, Next.js, Express, session management, TypeScript">
+<meta name="author" content="Nadun Dilshan">
+<meta name="robots" content="index, follow">
+
+<!-- Open Graph / Social Media -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://guardo.nadun.me">
+<meta property="og:title" content="guardo · Production-Ready Auth Engine for Node.js & Next.js">
+<meta property="og:description" content="Complete authentication engine with OTP login, JWT tokens, multi-device sessions, and built-in middleware. Pluggable storage (Memory/Redis) and notifiers (Email/SMS).">
+<meta property="og:image" content="https://guardo.nadun.me/banner.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="guardo">
+
+<!-- Twitter / X -->
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="https://guardo.nadun.me">
+<meta property="twitter:title" content="guardo · Production-Ready Auth Engine">
+<meta property="twitter:description" content="Complete authentication engine with OTP login, JWT tokens, multi-device sessions, and middleware for Node.js & Next.js.">
+<meta property="twitter:image" content="https://guardo.nadun.me/banner.webp">
+<meta property="twitter:creator" content="@nadun-dilshan">
+
+<!-- Canonical & Links -->
+<link rel="canonical" href="https://guardo.nadun.me">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="favicon.ico">
+
+<!-- Preconnect -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+
+<title>guardo · Production-Ready Auth Engine for Node.js & Next.js</title>
+
+<style>
+  :root {
+    --bg: #0c0e14;
+    --surface: #13161f;
+    --surface2: #1a1d2a;
+    --border: #222535;
+    --border2: #2d3148;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --accent3: #38bdf8;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --text: #e2e4f0;
+    --text2: #8b8fa8;
+    --text3: #5a5e75;
+    --code-bg: #0e1018;
+    --sidebar-w: 260px;
+    --header-h: 58px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; font-size: 15px; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ── HEADER ── */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: var(--header-h);
+    background: rgba(12,14,20,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+    flex-shrink: 0;
+    min-width: fit-content;
+  }
+
+  .logo-icon {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .logo-version {
+    font-size: 0.65rem;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--accent2);
+    padding: 1px 6px;
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0;
+  }
+
+  .header-nav {
+    flex: 1;
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .header-nav a {
+    color: var(--text2);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+
+  .header-nav a:hover { color: var(--text); background: var(--surface); }
+
+  .btn-npm {
+    background: var(--surface2) !important;
+    border: 1px solid var(--border2) !important;
+    color: var(--text) !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem !important;
+  }
+
+  .btn-npm:hover { border-color: var(--accent) !important; }
+
+  @media (max-width: 992px) {
+    .header-nav a:not(.btn-npm) { display: none; }
+  }
+
+  @media (max-width: 768px) {
+    header { padding: 0 12px; }
+    .header-nav a { padding: 4px 8px; font-size: 0.75rem; }
+    .header-nav a:not(.btn-npm) { display: none; }
+    .logo-text { font-size: 1rem; }
+    .logo-version { display: none; }
+  }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: flex;
+    padding-top: var(--header-h);
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  aside {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    bottom: 0;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+    padding: 20px 12px 40px;
+  }
+
+  .nav-section {
+    margin-bottom: 24px;
+  }
+
+  .nav-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    padding: 0 10px;
+    margin-bottom: 6px;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .nav-item {
+    display: block;
+    color: var(--text2);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.12s;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--surface); }
+  .nav-item.active { color: var(--accent2); background: rgba(108,99,255,0.08); border-left-color: var(--accent); }
+
+  .nav-badge {
+    float: right;
+    font-size: 0.6rem;
+    background: rgba(52,211,153,0.15);
+    color: var(--green);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+  }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    flex: 1;
+    margin-left: var(--sidebar-w);
+    min-width: 0;
+  }
+
+  .content {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 48px 100px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 60px 0 50px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(108,99,255,0.1);
+    border: 1px solid rgba(108,99,255,0.25);
+    color: var(--accent2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-desc {
+    font-size: 1.1rem;
+    color: var(--text2);
+    max-width: 580px;
+    line-height: 1.65;
+    margin-bottom: 28px;
+  }
+
+  .hero-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--accent);
+  }
+  .btn-primary:hover { background: #7c74ff; transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border2);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent2); }
+
+  .install-box {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    color: var(--green);
+  }
+
+  .install-box span { color: var(--text3); }
+
+  .install-copy {
+    background: none; border: none; cursor: pointer;
+    color: var(--text3); font-size: 0.75rem; padding: 2px 6px;
+    border-radius: 4px; transition: all 0.1s;
+  }
+  .install-copy:hover { color: var(--text); background: var(--surface2); }
+
+  /* ── FEATURE GRID ── */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    transition: border-color 0.15s;
+  }
+  .feature-card:hover { border-color: var(--border2); }
+
+  .feature-icon { font-size: 1.3rem; margin-bottom: 8px; }
+
+  .feature-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .feature-desc { font-size: 0.78rem; color: var(--text2); line-height: 1.5; }
+
+  /* ── SECTION ── */
+  .doc-section {
+    margin-bottom: 56px;
+    scroll-margin-top: calc(var(--header-h) + 20px);
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  h2 .h-anchor {
+    opacity: 0; font-size: 0.9rem; color: var(--text3);
+    text-decoration: none; transition: opacity 0.1s;
+  }
+  h2:hover .h-anchor { opacity: 1; }
+
+  .section-desc {
+    color: var(--text2);
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+  }
+
+  h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 28px 0 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  h4 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin: 20px 0 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  p { color: var(--text2); margin-bottom: 14px; font-size: 0.9rem; }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    position: relative;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .code-lang {
+    font-size: 0.7rem;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .code-filename {
+    font-size: 0.75rem;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text3);
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.1s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--border2); }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+  pre {
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+  }
+
+  p code, li code {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--accent2);
+    font-size: 0.8em;
+  }
+
+  /* syntax highlighting */
+  .kw { color: #c792ea; }
+  .fn { color: #82aaff; }
+  .str { color: #c3e88d; }
+  .cm { color: #546e7a; font-style: italic; }
+  .num { color: #f78c6c; }
+  .ty { color: #ffcb6b; }
+  .op { color: var(--text3); }
+  .prop { color: #89ddff; }
+
+  /* ── TABLES ── */
+  .doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+    margin-bottom: 20px;
+  }
+
+  .doc-table th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border2);
+    color: var(--text2);
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .doc-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    vertical-align: top;
+  }
+
+  .doc-table tr:last-child td { border-bottom: none; }
+  .doc-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .doc-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent2);
+    font-size: 0.8rem;
+  }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    display: flex; gap: 12px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.875rem;
+  }
+
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+
+  .callout-info {
+    background: rgba(56,189,248,0.07);
+    border: 1px solid rgba(56,189,248,0.2);
+    color: #7dd3fc;
+  }
+
+  .callout-warn {
+    background: rgba(251,191,36,0.07);
+    border: 1px solid rgba(251,191,36,0.2);
+    color: #fde68a;
+  }
+
+  .callout-tip {
+    background: rgba(52,211,153,0.07);
+    border: 1px solid rgba(52,211,153,0.2);
+    color: #6ee7b7;
+  }
+
+  /* ── METHOD BLOCKS ── */
+  .method-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .method-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .method-verb {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .verb-async { background: rgba(108,99,255,0.2); color: var(--accent2); }
+  .verb-sync { background: rgba(56,189,248,0.15); color: var(--accent3); }
+
+  .method-name { color: var(--text); }
+  .method-params { color: var(--text3); }
+  .method-returns { color: var(--text3); font-style: italic; }
+
+  .method-desc { padding: 14px 16px; font-size: 0.875rem; color: var(--text2); }
+
+  /* ── TABS ── */
+  .tabs { margin-bottom: 20px; }
+  .tab-list { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 0; }
+
+  .tab-btn {
+    background: none; border: none;
+    color: var(--text3); cursor: pointer;
+    padding: 8px 16px;
+    font-size: 0.82rem;
+    font-family: 'JetBrains Mono', monospace;
+    border-bottom: 2px solid transparent;
+    transition: all 0.12s;
+    margin-bottom: -1px;
+  }
+
+  .tab-btn:hover { color: var(--text2); }
+  .tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── CHANGELOG ── */
+  .changelog-item {
+    display: flex; gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .changelog-item:last-child { border-bottom: none; }
+
+  .changelog-meta { flex-shrink: 0; width: 120px; }
+
+  .changelog-version {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .changelog-date {
+    font-size: 0.75rem;
+    color: var(--text3);
+  }
+
+  .changelog-tag {
+    display: inline-block;
+    font-size: 0.62rem;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 6px;
+  }
+
+  .tag-feat { background: rgba(108,99,255,0.15); color: var(--accent2); }
+  .tag-fix { background: rgba(248,113,113,0.15); color: var(--red); }
+  .tag-patch { background: rgba(52,211,153,0.15); color: var(--green); }
+
+  .changelog-body { flex: 1; }
+
+  .changelog-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .changelog-body ul { list-style: none; }
+
+  .changelog-body li {
+    font-size: 0.85rem;
+    color: var(--text2);
+    padding: 3px 0;
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+
+  .changelog-body li::before { content: "·"; color: var(--text3); flex-shrink: 0; }
+
+  .change-type {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .ct-add { background: rgba(52,211,153,0.15); color: var(--green); }
+  .ct-fix { background: rgba(248,113,113,0.12); color: var(--red); }
+  .ct-chg { background: rgba(251,191,36,0.12); color: var(--yellow); }
+
+  /* ── TOC RIGHT ── */
+  .toc-aside {
+    display: none;
+  }
+
+  @media (min-width: 1200px) {
+    .toc-aside {
+      display: block;
+      width: 200px;
+      flex-shrink: 0;
+      position: sticky;
+      top: calc(var(--header-h) + 20px);
+      align-self: flex-start;
+      max-height: calc(100vh - var(--header-h) - 40px);
+      overflow-y: auto;
+      padding: 0 20px;
+    }
+
+    .content { padding-right: 20px; }
+  }
+
+  .toc-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    margin-bottom: 10px;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .toc-link {
+    display: block;
+    color: var(--text3);
+    text-decoration: none;
+    font-size: 0.78rem;
+    padding: 3px 0;
+    border-left: 2px solid var(--border);
+    padding-left: 10px;
+    transition: all 0.1s;
+  }
+
+  .toc-link:hover { color: var(--text); border-left-color: var(--accent); }
+
+  /* ── DIVIDER ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* ── SEARCH ── */
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    margin-bottom: 20px;
+    cursor: text;
+  }
+
+  .search-box input {
+    background: none; border: none; outline: none;
+    color: var(--text2); font-size: 0.82rem;
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .search-box input::placeholder { color: var(--text3); }
+
+  /* ── MOBILE ── */
+  .mobile-menu-btn {
+    display: none;
+    background: none; border: none;
+    color: var(--text2); cursor: pointer;
+    padding: 6px; font-size: 1.1rem;
+    order: -1;
+    min-width: fit-content;
+  }
+
+  @media (max-width: 768px) {
+    aside { transform: translateX(-100%); transition: transform 0.2s; z-index: 50; width: 80vw; max-width: 280px; }
+    aside.open { transform: translateX(0); box-shadow: 4px 0 16px rgba(0,0,0,0.3); }
+    main { margin-left: 0; }
+    .content { padding: 24px 16px 60px; }
+    h1 { font-size: 1.75rem; }
+    .mobile-menu-btn { display: block; }
+    .header-logo { width: auto; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .hero-desc { font-size: 1rem; }
+    .header-nav { gap: 4px; }
+  }
+
+  @media (max-width: 480px) {
+    :root { --header-h: 50px; }
+    header { padding: 0 8px; }
+    .logo-text { font-size: 0.95rem; }
+    .mobile-menu-btn { font-size: 1rem; padding: 4px; }
+    .header-nav a { padding: 3px 6px; font-size: 0.7rem; }
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.3rem; }
+    .content { padding: 20px 12px 60px; }
+    .feature-grid { gap: 8px; }
+    .feature-card { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <button class="mobile-menu-btn" onclick="toggleSidebar()" title="Toggle menu">☰</button>
+  <a href="#" class="header-logo">
+    <div class="logo-icon">🔐</div>
+    <span class="logo-text">guardo</span>
+    <span class="logo-version">v1.0.1</span>
+  </a>
+  <nav class="header-nav">
+    <a href="#quickstart">Quick Start</a>
+    <a href="#changelog">Changelog</a>
+    <a href="https://github.com/nadun-dilshan" target="_blank">GitHub ↗</a>
+    <a href="https://www.npmjs.com/package/guardo" target="_blank" class="btn btn-npm">npm ↗</a>
+  </nav>
+</header>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="search-box">
+      <span style="color:var(--text3);font-size:0.85rem">⌕</span>
+      <input type="text" placeholder="Search docs..." oninput="filterNav(this.value)">
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Getting Started</div>
+      <a href="#introduction" class="nav-item active" onclick="setActive(this)">Introduction</a>
+      <a href="#installation" class="nav-item" onclick="setActive(this)">Installation</a>
+      <a href="#quickstart" class="nav-item" onclick="setActive(this)">Quick Start</a>
+      <a href="#configuration" class="nav-item" onclick="setActive(this)">Configuration</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Core Modules</div>
+      <a href="#otp" class="nav-item" onclick="setActive(this)">OTP Module</a>
+      <a href="#auth" class="nav-item" onclick="setActive(this)">Auth Module</a>
+      <a href="#jwt" class="nav-item" onclick="setActive(this)">JWT Module</a>
+      <a href="#session" class="nav-item" onclick="setActive(this)">Session Module</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Middleware</div>
+      <a href="#express-middleware" class="nav-item" onclick="setActive(this)">Express</a>
+      <a href="#nextjs-middleware" class="nav-item" onclick="setActive(this)">Next.js</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Storage</div>
+      <a href="#memory-store" class="nav-item" onclick="setActive(this)">Memory Store <span class="nav-badge">dev</span></a>
+      <a href="#redis-store" class="nav-item" onclick="setActive(this)">Redis Store <span class="nav-badge">prod</span></a>
+      <a href="#custom-store" class="nav-item" onclick="setActive(this)">Custom Store</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Notifiers</div>
+      <a href="#console-notifier" class="nav-item" onclick="setActive(this)">Console</a>
+      <a href="#email-notifier" class="nav-item" onclick="setActive(this)">Email (Nodemailer)</a>
+      <a href="#custom-notifier" class="nav-item" onclick="setActive(this)">Custom Notifier</a>
+      <a href="#multi-channel" class="nav-item" onclick="setActive(this)">Multi-Channel</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Reference</div>
+      <a href="#errors" class="nav-item" onclick="setActive(this)">Error Handling</a>
+      <a href="#types" class="nav-item" onclick="setActive(this)">TypeScript Types</a>
+      <a href="#security" class="nav-item" onclick="setActive(this)">Security Notes</a>
+      <a href="#changelog" class="nav-item" onclick="setActive(this)">Changelog</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+    <div class="content">
+
+      <!-- HERO -->
+      <section class="hero" id="introduction">
+        <div class="hero-badge">🔐 Production-Ready · TypeScript · v1.0.1</div>
+        <h1>guardo</h1>
+        <p class="hero-desc">A complete authentication engine for Node.js and Next.js. OTP login, JWT tokens, multi-device sessions, and middleware - wired together so you don't have to.</p>
+
+        <div class="hero-actions">
+          <a href="#quickstart" class="btn btn-primary">Get Started →</a>
+          <a href="https://github.com/nadun-dilshan" target="_blank" class="btn btn-secondary">⭐ GitHub</a>
+          <a href="https://www.npmjs.com/package/guardo" target="_blank" class="btn btn-secondary">📦 npm</a>
+        </div>
+
+        <div class="install-box">
+          <span>$</span>
+          <code id="install-cmd">npm install guardo</code>
+          <button class="install-copy" onclick="copyInstall()">copy</button>
+        </div>
+
+        <div style="margin-top: 28px;">
+          <div class="feature-grid">
+            <div class="feature-card"><div class="feature-icon">📱</div><div class="feature-title">OTP Login</div><div class="feature-desc">Generate, send & verify time-limited codes via email or SMS.</div></div>
+            <div class="feature-card"><div class="feature-icon">🎟️</div><div class="feature-title">JWT Tokens</div><div class="feature-desc">Access + refresh token pairs with configurable TTLs.</div></div>
+            <div class="feature-card"><div class="feature-icon">💻</div><div class="feature-title">Sessions</div><div class="feature-desc">Multi-device sessions with per-device revocation.</div></div>
+            <div class="feature-card"><div class="feature-icon">🛡️</div><div class="feature-title">Middleware</div><div class="feature-desc">Express guards and Next.js Edge-compatible wrappers.</div></div>
+            <div class="feature-card"><div class="feature-icon">🗄️</div><div class="feature-title">Pluggable Storage</div><div class="feature-desc">In-memory (dev) or Redis (prod) - or bring your own.</div></div>
+            <div class="feature-card"><div class="feature-icon">🚦</div><div class="feature-title">Rate Limiting</div><div class="feature-desc">Per-identifier sliding-window limits built in.</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INSTALLATION -->
+      <section class="doc-section" id="installation">
+        <h2>Installation <a href="#installation" class="h-anchor">#</a></h2>
+        <p class="section-desc">Install guardo from npm. Nodemailer is bundled. Install ioredis separately if you need Redis in production.</p>
+
+        <div class="tabs">
+          <div class="tab-list">
+            <button class="tab-btn active" onclick="switchTab(this, 'install-npm')">npm</button>
+            <button class="tab-btn" onclick="switchTab(this, 'install-pnpm')">pnpm</button>
+            <button class="tab-btn" onclick="switchTab(this, 'install-yarn')">yarn</button>
+          </div>
+          <div id="install-npm" class="tab-panel active">
+            <div class="code-block">
+              <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+              <pre><span class="cm"># Core package</span>
+npm install guardo
+
+<span class="cm"># Optional: Redis adapter for production</span>
+npm install ioredis</pre>
+            </div>
+          </div>
+          <div id="install-pnpm" class="tab-panel">
+            <div class="code-block">
+              <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+              <pre>pnpm add guardo
+pnpm add ioredis <span class="cm"># optional, for production</span></pre>
+            </div>
+          </div>
+          <div id="install-yarn" class="tab-panel">
+            <div class="code-block">
+              <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+              <pre>yarn add guardo
+yarn add ioredis <span class="cm"># optional, for production</span></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <span class="callout-icon">ℹ️</span>
+          <span><strong>Peer dependencies:</strong> <code>express</code>, <code>next</code>, and <code>ioredis</code> are all optional. Install only what you use.</span>
+        </div>
+      </section>
+
+      <!-- QUICK START -->
+      <section class="doc-section" id="quickstart">
+        <h2>Quick Start <a href="#quickstart" class="h-anchor">#</a></h2>
+        <p class="section-desc">A full OTP login flow in three steps. No config needed to try it - OTPs print to the console by default.</p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-filename">auth.ts</span>
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          </div>
+          <pre><span class="kw">import</span> { <span class="prop">createAuth</span> } <span class="kw">from</span> <span class="str">"guardo"</span>;
+
+<span class="kw">const</span> <span class="prop">auth</span> = <span class="fn">createAuth</span>({
+  jwt: { secret: process.env.<span class="prop">JWT_SECRET</span>! },
+});
+
+<span class="cm">// ─── Step 1: Send OTP ─────────────────────────────────────</span>
+<span class="kw">await</span> auth.otp.<span class="fn">send</span>({ identifier: <span class="str">"user@example.com"</span> });
+<span class="cm">// → OTP delivered to inbox (or console in dev)</span>
+
+<span class="cm">// ─── Step 2: Verify OTP + login ───────────────────────────</span>
+<span class="kw">const</span> { user, accessToken, refreshToken, sessionId } =
+  <span class="kw">await</span> auth.auth.<span class="fn">loginWithOtp</span>({
+    identifier: <span class="str">"user@example.com"</span>,
+    otp: <span class="str">"123456"</span>,
+    meta: { device: <span class="str">"chrome-mac"</span>, ip: req.ip },
+  });
+
+<span class="cm">// ─── Step 3: Protect routes ──────────────────────────────</span>
+app.<span class="fn">get</span>(<span class="str">"/me"</span>, auth.middleware.<span class="fn">express</span>(), (req, res) => {
+  res.<span class="fn">json</span>(req.user); <span class="cm">// req.user is automatically populated</span>
+});</pre>
+        </div>
+
+        <div class="callout callout-tip">
+          <span class="callout-icon">💡</span>
+          <span>In development, OTPs are printed to the console automatically - no email setup needed. Use <code>ConsoleNotifier</code> explicitly or let it fall back to Ethereal test emails.</span>
+        </div>
+      </section>
+
+      <!-- CONFIGURATION -->
+      <section class="doc-section" id="configuration">
+        <h2>Configuration <a href="#configuration" class="h-anchor">#</a></h2>
+        <p class="section-desc">All options you can pass to <code>createAuth()</code>. Only <code>jwt.secret</code> is required.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">auth.ts</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">import</span> { <span class="prop">createAuth</span>, <span class="prop">RedisStore</span> } <span class="kw">from</span> <span class="str">"guardo"</span>;
+
+<span class="kw">const</span> auth = <span class="fn">createAuth</span>({
+  <span class="cm">// ─── Required ─────────────────────────────────────────</span>
+  jwt: {
+    secret: <span class="str">"at-least-16-chars"</span>,
+    accessTokenTTL:  <span class="str">"15m"</span>,  <span class="cm">// default</span>
+    refreshTokenTTL: <span class="str">"7d"</span>,   <span class="cm">// default</span>
+    extraClaims: { iss: <span class="str">"my-app"</span> }, <span class="cm">// embedded in every token</span>
+  },
+
+  <span class="cm">// ─── OTP ──────────────────────────────────────────────</span>
+  otp: {
+    length: <span class="num">6</span>,    <span class="cm">// default</span>
+    expiry: <span class="num">300</span>, <span class="cm">// seconds - default 5 minutes</span>
+  },
+
+  <span class="cm">// ─── Storage ──────────────────────────────────────────</span>
+  store: <span class="kw">new</span> <span class="fn">RedisStore</span>(redisClient), <span class="cm">// default: MemoryStore</span>
+
+  <span class="cm">// ─── Notifications ────────────────────────────────────</span>
+  notifier: myEmailNotifier,    <span class="cm">// default: ConsoleNotifier</span>
+
+  <span class="cm">// ─── Rate limits ──────────────────────────────────────</span>
+  rateLimit: {
+    otpSend:   { max: <span class="num">5</span>,  windowSeconds: <span class="num">60</span> }, <span class="cm">// default</span>
+    otpVerify: { max: <span class="num">10</span>, windowSeconds: <span class="num">60</span> }, <span class="cm">// default</span>
+  },
+
+  <span class="cm">// ─── User resolution ──────────────────────────────────</span>
+  <span class="cm">// Called after OTP verification and on every auth'd request.</span>
+  <span class="cm">// Attach your DB call here so req.user is always full.</span>
+  resolveUser: <span class="kw">async</span> (identifier) => {
+    <span class="kw">return</span> db.users.<span class="fn">findByEmail</span>(identifier);
+  },
+});</pre>
+        </div>
+
+        <h3>Config Reference</h3>
+        <table class="doc-table">
+          <thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>jwt.secret</td><td>string</td><td>required</td><td>Secret key for signing JWTs. Min 16 chars.</td></tr>
+            <tr><td>jwt.accessTokenTTL</td><td>string</td><td>"15m"</td><td>Access token lifetime. e.g. "15m", "1h".</td></tr>
+            <tr><td>jwt.refreshTokenTTL</td><td>string</td><td>"7d"</td><td>Refresh token lifetime. e.g. "7d", "30d".</td></tr>
+            <tr><td>jwt.extraClaims</td><td>object</td><td>{}</td><td>Additional fields embedded in every token.</td></tr>
+            <tr><td>otp.length</td><td>number</td><td>6</td><td>Length of generated OTP codes.</td></tr>
+            <tr><td>otp.expiry</td><td>number</td><td>300</td><td>OTP TTL in seconds.</td></tr>
+            <tr><td>store</td><td>StorageAdapter</td><td>MemoryStore</td><td>Where OTPs and sessions are stored.</td></tr>
+            <tr><td>notifier</td><td>Notifier</td><td>NodemailerNotifier</td><td>How OTPs are delivered.</td></tr>
+            <tr><td>rateLimit.otpSend</td><td>RateLimitRule</td><td>5/60s</td><td>Max OTP send requests per window.</td></tr>
+            <tr><td>rateLimit.otpVerify</td><td>RateLimitRule</td><td>10/60s</td><td>Max OTP verify requests per window.</td></tr>
+            <tr><td>resolveUser</td><td>function</td><td>undefined</td><td>Return a full User from an identifier.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr class="divider">
+
+      <!-- OTP MODULE -->
+      <section class="doc-section" id="otp">
+        <h2>OTP Module <a href="#otp" class="h-anchor">#</a></h2>
+        <p class="section-desc">Accessed via <code>auth.otp</code>. Handles generating, delivering, and verifying one-time passwords.</p>
+
+        <div class="method-block">
+          <div class="method-header">
+            <span class="method-verb verb-async">async</span>
+            <span class="method-name">otp.send</span>
+            <span class="method-params">(opts: SendOtpOptions)</span>
+            <span class="method-returns">→ Promise&lt;{ expiresInSeconds: number }&gt;</span>
+          </div>
+          <div class="method-desc">Generates a fresh OTP, stores it hashed, and delivers it via the configured notifier. Calling again before expiry replaces the previous code and resets the attempt counter.</div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">const</span> result = <span class="kw">await</span> auth.otp.<span class="fn">send</span>({
+  identifier: <span class="str">"user@example.com"</span>,
+  channel: <span class="str">"email"</span>, <span class="cm">// or "sms" - default "email"</span>
+});
+<span class="cm">// → { expiresInSeconds: 300 }</span></pre>
+        </div>
+
+        <div class="method-block">
+          <div class="method-header">
+            <span class="method-verb verb-async">async</span>
+            <span class="method-name">otp.verify</span>
+            <span class="method-params">(opts: VerifyOtpOptions)</span>
+            <span class="method-returns">→ Promise&lt;VerifyOtpResult&gt;</span>
+          </div>
+          <div class="method-desc">Verifies the user-entered OTP. Consumes it on success (one-time use). After 5 failed attempts, the OTP is automatically invalidated.</div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">const</span> result = <span class="kw">await</span> auth.otp.<span class="fn">verify</span>({
+  identifier: <span class="str">"user@example.com"</span>,
+  otp: <span class="str">"123456"</span>,
+});
+
+<span class="cm">// Success:</span>
+<span class="cm">// { success: true, verified: true }</span>
+
+<span class="cm">// Failure:</span>
+<span class="cm">// { success: false, verified: false, error: "Invalid OTP. 4 attempt(s) remaining." }</span>
+<span class="cm">// { success: false, verified: false, error: "OTP expired or not found." }</span></pre>
+        </div>
+
+        <div class="method-block">
+          <div class="method-header">
+            <span class="method-verb verb-async">async</span>
+            <span class="method-name">otp.exists</span>
+            <span class="method-params">(identifier: string)</span>
+            <span class="method-returns">→ Promise&lt;boolean&gt;</span>
+          </div>
+          <div class="method-desc">Check whether a valid (unexpired) OTP exists for an identifier. Useful for showing "resend" UI.</div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">const</span> pending = <span class="kw">await</span> auth.otp.<span class="fn">exists</span>(<span class="str">"user@example.com"</span>);
+<span class="cm">// → true or false</span></pre>
+        </div>
+      </section>
+
+      <!-- AUTH MODULE -->
+      <section class="doc-section" id="auth">
+        <h2>Auth Module <a href="#auth" class="h-anchor">#</a></h2>
+        <p class="section-desc">Accessed via <code>auth.auth</code>. High-level flows that orchestrate OTP, JWT, and Session modules together.</p>
+
+        <div class="method-block">
+          <div class="method-header">
+            <span class="method-verb verb-async">async</span>
+            <span class="method-name">auth.loginWithOtp</span>
+            <span class="method-params">(opts: LoginWithOtpOptions)</span>
+            <span class="method-returns">→ Promise&lt;LoginResult&gt;</span>
+          </div>
+          <div class="method-desc">One-shot login: verifies OTP → creates a session → issues access + refresh tokens. Throws <code>AuthError</code> if OTP is invalid or user not found.</div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">const</span> result = <span class="kw">await</span> auth.auth.<span class="fn">loginWithOtp</span>({
+  identifier: <span class="str">"user@example.com"</span>,
+  otp: <span class="str">"123456"</span>,
+  meta: {         <span class="cm">// optional session metadata</span>
+    device: <span class="str">"iPhone 15"</span>,
+    ip: <span class="str">"1.2.3.4"</span>,
+    userAgent: req.headers[<span class="str">"user-agent"</span>],
+  },
+});
+
+<span class="cm">// result: {</span>
+<span class="cm">//   user:         { id: "123", email: "user@example.com" },</span>
+<span class="cm">//   accessToken:  "eyJ...",</span>
+<span class="cm">//   refreshToken: "eyJ...",</span>
+<span class="cm">//   sessionId:    "sess_abc123",</span>
+<span class="cm">// }</span></pre>
+        </div>
+
+        <div class="method-block">
+          <div class="method-header">
+            <span class="method-verb verb-async">async</span>
+            <span class="method-name">auth.refreshTokens</span>
+            <span class="method-params">(refreshToken: string)</span>
+            <span class="method-returns">→ Promise&lt;TokenPair & { sessionId }&gt;</span>
+          </div>
+          <div class="method-desc">Exchange a valid refresh token for a fresh token pair. Uses token rotation - old session is revoked and a new one is created.</div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">const</span> { accessToken, refreshToken, sessionId } =
+  <span class="kw">await</span> auth.auth.<span class="fn">refreshTokens</span>(oldRefreshToken);</pre>
+        </div>
+
+        <div class="method-block">
+          <div class="method-header">
+            <span class="method-verb verb-async">async</span>
+            <span class="method-name">auth.logout</span>
+            <span class="method-params">(sessionId: string)</span>
+            <span class="method-returns">→ Promise&lt;void&gt;</span>
+          </div>
+          <div class="method-desc">Revoke a specific session (single-device logout).</div>
+        </div>
+
+        <div class="method-block">
+          <div class="method-header">
+            <span class="method-verb verb-async">async</span>
+            <span class="method-name">auth.logoutAll</span>
+            <span class="method-params">(userId: string)</span>
+            <span class="method-returns">→ Promise&lt;number&gt;</span>
+          </div>
+          <div class="method-desc">Revoke ALL sessions for a user (logout everywhere). Returns the number of sessions revoked.</div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">await</span> auth.auth.<span class="fn">logout</span>(<span class="str">"sess_abc123"</span>);       <span class="cm">// single device</span>
+<span class="kw">const</span> count = <span class="kw">await</span> auth.auth.<span class="fn">logoutAll</span>(<span class="str">"user-123"</span>); <span class="cm">// → 3 sessions revoked</span></pre>
+        </div>
+      </section>
+
+      <!-- JWT MODULE -->
+      <section class="doc-section" id="jwt">
+        <h2>JWT Module <a href="#jwt" class="h-anchor">#</a></h2>
+        <p class="section-desc">Accessed via <code>auth.jwt</code>. Low-level token operations. Typically you won't need this - <code>auth.auth</code> handles token issuance automatically.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="cm">// Issue tokens manually</span>
+<span class="kw">const</span> accessToken  = auth.jwt.<span class="fn">issueAccessToken</span>(user, sessionId);
+<span class="kw">const</span> refreshToken = auth.jwt.<span class="fn">issueRefreshToken</span>(user, sessionId);
+<span class="kw">const</span> { accessToken, refreshToken } = auth.jwt.<span class="fn">issueTokenPair</span>(user, sessionId);
+
+<span class="cm">// Verify (throws on invalid or expired)</span>
+<span class="kw">const</span> payload = auth.jwt.<span class="fn">verifyAccessToken</span>(token);
+<span class="kw">const</span> payload = auth.jwt.<span class="fn">verifyRefreshToken</span>(token);
+
+<span class="cm">// Decode without verifying (read sub from expired token)</span>
+<span class="kw">const</span> payload = auth.jwt.<span class="fn">decode</span>(token); <span class="cm">// returns null if unparseable</span></pre>
+        </div>
+      </section>
+
+      <!-- SESSION MODULE -->
+      <section class="doc-section" id="session">
+        <h2>Session Module <a href="#session" class="h-anchor">#</a></h2>
+        <p class="section-desc">Accessed via <code>auth.session</code>. Multi-device session management backed by the storage adapter.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="cm">// Create a session (sessionId is auto-generated)</span>
+<span class="kw">const</span> session = <span class="kw">await</span> auth.session.<span class="fn">create</span>(userId, {
+  device: <span class="str">"Safari on iPad"</span>,
+  ip: <span class="str">"1.2.3.4"</span>,
+  userAgent: <span class="str">"Mozilla/5.0..."</span>,
+});
+
+<span class="cm">// Get one session by ID</span>
+<span class="kw">const</span> session = <span class="kw">await</span> auth.session.<span class="fn">get</span>(<span class="str">"sess_abc123"</span>);
+
+<span class="cm">// List all sessions for a user (newest first)</span>
+<span class="kw">const</span> sessions = <span class="kw">await</span> auth.session.<span class="fn">list</span>(userId);
+
+<span class="cm">// Touch: update lastActiveAt (call on each auth'd request)</span>
+<span class="kw">await</span> auth.session.<span class="fn">touch</span>(<span class="str">"sess_abc123"</span>);
+
+<span class="cm">// Revoke one session</span>
+<span class="kw">await</span> auth.session.<span class="fn">revoke</span>(<span class="str">"sess_abc123"</span>);
+
+<span class="cm">// Revoke all sessions for a user → returns count</span>
+<span class="kw">const</span> n = <span class="kw">await</span> auth.session.<span class="fn">revokeAll</span>(userId);</pre>
+        </div>
+
+        <h3>Session Object Shape</h3>
+        <table class="doc-table">
+          <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>sessionId</td><td>string</td><td>Unique ID, format: <code>sess_{hex}</code></td></tr>
+            <tr><td>userId</td><td>string</td><td>The user this session belongs to</td></tr>
+            <tr><td>device</td><td>string?</td><td>Device label from session meta</td></tr>
+            <tr><td>ip</td><td>string?</td><td>IP address from session meta</td></tr>
+            <tr><td>userAgent</td><td>string?</td><td>User-Agent string</td></tr>
+            <tr><td>createdAt</td><td>string</td><td>ISO timestamp of creation</td></tr>
+            <tr><td>lastActiveAt</td><td>string</td><td>ISO timestamp of last touch</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr class="divider">
+
+      <!-- EXPRESS MIDDLEWARE -->
+      <section class="doc-section" id="express-middleware">
+        <h2>Express Middleware <a href="#express-middleware" class="h-anchor">#</a></h2>
+
+        <h3><code>auth.middleware.express()</code></h3>
+        <p>Validates the <code>Authorization: Bearer &lt;token&gt;</code> header, populates <code>req.user</code> and <code>req.session</code>, and calls <code>session.touch()</code> on each request.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">routes.ts</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre>app.<span class="fn">get</span>(<span class="str">"/profile"</span>, auth.middleware.<span class="fn">express</span>(), (req, res) => {
+  res.<span class="fn">json</span>(req.user);
+});</pre>
+        </div>
+
+        <h3><code>auth.middleware.role(roles)</code></h3>
+        <p>Role-based access control. Must be placed <strong>after</strong> <code>express()</code>. Returns 403 if the user's role isn't in the allowed list.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">routes.ts</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre>app.<span class="fn">delete</span>(
+  <span class="str">"/admin/users/:id"</span>,
+  auth.middleware.<span class="fn">express</span>(),
+  auth.middleware.<span class="fn">role</span>([<span class="str">"admin"</span>, <span class="str">"superadmin"</span>]),
+  handler,
+);</pre>
+        </div>
+
+        <div class="callout callout-warn">
+          <span class="callout-icon">⚠️</span>
+          <span><code>role()</code> must always come <strong>after</strong> <code>express()</code> - it relies on <code>req.user</code> being set first.</span>
+        </div>
+      </section>
+
+      <!-- NEXT.JS MIDDLEWARE -->
+      <section class="doc-section" id="nextjs-middleware">
+        <h2>Next.js Middleware <a href="#nextjs-middleware" class="h-anchor">#</a></h2>
+
+        <h3>Edge Middleware - <code>auth.middleware.nextjs()</code></h3>
+        <p>Protect entire route groups in the Next.js Edge runtime. Export from your project-root <code>middleware.ts</code>.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">middleware.ts</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">import</span> { <span class="prop">createAuth</span> } <span class="kw">from</span> <span class="str">"guardo"</span>;
+
+<span class="kw">const</span> auth = <span class="fn">createAuth</span>({ jwt: { secret: process.env.<span class="prop">JWT_SECRET</span>! } });
+
+<span class="kw">export const</span> middleware = auth.middleware.<span class="fn">nextjs</span>();
+
+<span class="kw">export const</span> config = {
+  matcher: [<span class="str">"/api/:path*"</span>, <span class="str">"/dashboard/:path*"</span>],
+};</pre>
+        </div>
+
+        <h3>App Router Route Wrapper - <code>auth.middleware.nextjsRoute()</code></h3>
+        <p>Wrap individual API route handlers in the App Router. The handler receives the verified <code>user</code> as the second argument.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">app/api/me/route.ts</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">export const</span> <span class="prop">GET</span> = auth.middleware.<span class="fn">nextjsRoute</span>(<span class="kw">async</span> (req, user) => {
+  <span class="kw">return</span> Response.<span class="fn">json</span>({ user });
+});</pre>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- STORAGE -->
+      <section class="doc-section" id="memory-store">
+        <h2>Storage Adapters <a href="#memory-store" class="h-anchor">#</a></h2>
+        <p class="section-desc">guardo stores OTPs, sessions, and rate limit windows in a <code>StorageAdapter</code>. Swap between implementations without changing your auth code.</p>
+
+        <h3>In-Memory Store <span style="font-size:0.75rem;color:var(--text3);font-weight:400;font-family:'DM Sans',sans-serif">- dev &amp; test only</span></h3>
+        <p>The default. Data is lost on process restart - perfect for development and tests.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">import</span> { <span class="prop">MemoryStore</span> } <span class="kw">from</span> <span class="str">"guardo"</span>;
+
+<span class="kw">const</span> store = <span class="kw">new</span> <span class="fn">MemoryStore</span>();
+store.<span class="fn">clear</span>(); <span class="cm">// useful in tests - wipe everything</span></pre>
+        </div>
+      </section>
+
+      <section class="doc-section" id="redis-store">
+        <h3>Redis Store <span style="font-size:0.75rem;color:var(--text3);font-weight:400;font-family:'DM Sans',sans-serif">- production recommended</span></h3>
+        <p>Backed by <a href="https://github.com/redis/ioredis" style="color:var(--accent2)">ioredis</a>. Works across multiple server instances. Install <code>ioredis</code> separately.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">import</span> { <span class="prop">RedisStore</span>, <span class="prop">createAuth</span> } <span class="kw">from</span> <span class="str">"guardo"</span>;
+<span class="kw">import</span> <span class="prop">Redis</span> <span class="kw">from</span> <span class="str">"ioredis"</span>;
+
+<span class="kw">const</span> redis = <span class="kw">new</span> <span class="fn">Redis</span>(process.env.<span class="prop">REDIS_URL</span>);
+<span class="kw">const</span> store = <span class="kw">new</span> <span class="fn">RedisStore</span>(redis);
+
+<span class="kw">const</span> auth = <span class="fn">createAuth</span>({ jwt: { secret: <span class="str">"..."</span> }, store });</pre>
+        </div>
+      </section>
+
+      <section class="doc-section" id="custom-store">
+        <h3>Custom Store</h3>
+        <p>Implement <code>StorageAdapter</code> to use any database (MongoDB, DynamoDB, PostgreSQL, etc.).</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">import type</span> { <span class="ty">StorageAdapter</span> } <span class="kw">from</span> <span class="str">"guardo"</span>;
+
+<span class="kw">class</span> <span class="ty">MongoStore</span> <span class="kw">implements</span> <span class="ty">StorageAdapter</span> {
+  <span class="kw">async</span> <span class="fn">set</span>(key: <span class="ty">string</span>, value: <span class="ty">string</span>, ttlSeconds?: <span class="ty">number</span>) { <span class="cm">/* ... */</span> }
+  <span class="kw">async</span> <span class="fn">get</span>(key: <span class="ty">string</span>): <span class="ty">Promise</span>&lt;<span class="ty">string</span> | <span class="kw">null</span>&gt; { <span class="cm">/* ... */</span> }
+  <span class="kw">async</span> <span class="fn">delete</span>(key: <span class="ty">string</span>) { <span class="cm">/* ... */</span> }
+  <span class="kw">async</span> <span class="fn">keys</span>(prefix: <span class="ty">string</span>): <span class="ty">Promise</span>&lt;<span class="ty">string</span>[]&gt; { <span class="cm">/* ... */</span> }
+}</pre>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- NOTIFIERS -->
+      <section class="doc-section" id="console-notifier">
+        <h2>Notifiers <a href="#console-notifier" class="h-anchor">#</a></h2>
+        <p class="section-desc">Notifiers deliver OTP codes to users. Swap between Console (dev), Nodemailer (email), or build your own.</p>
+
+        <h3>Console Notifier <span style="font-size:0.75rem;color:var(--text3);font-weight:400;font-family:'DM Sans',sans-serif">- dev only</span></h3>
+        <p>Logs OTPs to stdout. Zero configuration. Great for local development.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">import</span> { <span class="prop">ConsoleNotifier</span>, <span class="prop">createAuth</span> } <span class="kw">from</span> <span class="str">"guardo"</span>;
+
+<span class="kw">const</span> auth = <span class="fn">createAuth</span>({
+  jwt: { secret: <span class="str">"..."</span> },
+  notifier: <span class="kw">new</span> <span class="fn">ConsoleNotifier</span>(),
+});
+<span class="cm">// Console: [guardo] OTP for user@example.com via email: 483920 (expires in 300s)</span></pre>
+        </div>
+      </section>
+
+      <section class="doc-section" id="email-notifier">
+        <h3>Nodemailer (Email)</h3>
+        <p>Two modes: <strong>Ethereal</strong> (automatic test inbox, no config) or <strong>real SMTP</strong> (Gmail, Resend, SendGrid, etc.).</p>
+
+        <div class="tabs">
+          <div class="tab-list">
+            <button class="tab-btn active" onclick="switchTab(this, 'notif-ethereal')">Ethereal (dev)</button>
+            <button class="tab-btn" onclick="switchTab(this, 'notif-smtp')">Real SMTP (prod)</button>
+            <button class="tab-btn" onclick="switchTab(this, 'notif-template')">Custom Template</button>
+          </div>
+          <div id="notif-ethereal" class="tab-panel active">
+            <div class="code-block">
+              <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+              <pre><span class="kw">import</span> { <span class="prop">NodemailerNotifier</span>, <span class="prop">createAuth</span> } <span class="kw">from</span> <span class="str">"guardo"</span>;
+
+<span class="cm">// No smtp config → auto-creates Ethereal test account</span>
+<span class="kw">const</span> auth = <span class="fn">createAuth</span>({
+  jwt: { secret: <span class="str">"..."</span> },
+  notifier: <span class="kw">new</span> <span class="fn">NodemailerNotifier</span>(),
+});
+<span class="cm">// Outputs preview URL to console after sending</span></pre>
+            </div>
+          </div>
+          <div id="notif-smtp" class="tab-panel">
+            <div class="code-block">
+              <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+              <pre><span class="kw">const</span> auth = <span class="fn">createAuth</span>({
+  jwt: { secret: <span class="str">"..."</span> },
+  notifier: <span class="kw">new</span> <span class="fn">NodemailerNotifier</span>({
+    smtp: {
+      host: <span class="str">"smtp.gmail.com"</span>,   <span class="cm">// or sendgrid, resend, etc.</span>
+      port: <span class="num">587</span>,
+      secure: <span class="kw">false</span>,             <span class="cm">// STARTTLS</span>
+      user: process.env.<span class="prop">SMTP_USER</span>,
+      pass: process.env.<span class="prop">SMTP_PASS</span>,
+    },
+    from: <span class="str">"noreply@myapp.com"</span>,
+    subject: <span class="str">"Your login code"</span>,
+  }),
+});</pre>
+            </div>
+          </div>
+          <div id="notif-template" class="tab-panel">
+            <div class="code-block">
+              <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+              <pre><span class="kw">const</span> notifier = <span class="kw">new</span> <span class="fn">NodemailerNotifier</span>({
+  smtp: { host: <span class="str">"..."</span>, user: <span class="str">"..."</span>, pass: <span class="str">"..."</span> },
+  <span class="prop">buildHtml</span>: (code, expiresInSeconds) => <span class="str">`
+    &lt;h2&gt;Sign in to My App&lt;/h2&gt;
+    &lt;p&gt;Your code: &lt;strong&gt;${code}&lt;/strong&gt;&lt;/p&gt;
+    &lt;p&gt;Valid for ${Math.round(expiresInSeconds! / 60)} minutes.&lt;/p&gt;
+  `</span>,
+  <span class="prop">buildText</span>: (code, expiresInSeconds) =>
+    <span class="str">`Sign in code: ${code}\nValid for ${Math.round(expiresInSeconds! / 60)} minutes.`</span>,
+});</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="doc-section" id="custom-notifier">
+        <h3>Custom Notifier</h3>
+        <p>Implement the <code>Notifier</code> interface with a single <code>sendOTP</code> method.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">import type</span> { <span class="ty">Notifier</span>, <span class="ty">NotifyPayload</span> } <span class="kw">from</span> <span class="str">"guardo"</span>;
+
+<span class="kw">class</span> <span class="ty">TwilioNotifier</span> <span class="kw">implements</span> <span class="ty">Notifier</span> {
+  <span class="kw">async</span> <span class="fn">sendOTP</span>({ to, code, expiresInSeconds }: <span class="ty">NotifyPayload</span>) {
+    <span class="kw">await</span> twilio.messages.<span class="fn">create</span>({
+      to,
+      from: process.env.<span class="prop">TWILIO_NUMBER</span>,
+      body: <span class="str">`Your code is ${code}. Expires in ${expiresInSeconds}s.`</span>,
+    });
+  }
+}
+
+<span class="cm">// Functional shorthand</span>
+<span class="kw">import</span> { <span class="prop">createNotifier</span> } <span class="kw">from</span> <span class="str">"guardo"</span>;
+<span class="kw">const</span> notifier = <span class="fn">createNotifier</span>(<span class="kw">async</span> ({ to, code }) => {
+  console.<span class="fn">log</span>(<span class="str">`Send ${code} to ${to}`</span>);
+});</pre>
+        </div>
+      </section>
+
+      <section class="doc-section" id="multi-channel">
+        <h3>Multi-Channel Notifier</h3>
+        <p>Route different channels (email/SMS) to different notifier implementations.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">import</span> { <span class="prop">MultiChannelNotifier</span> } <span class="kw">from</span> <span class="str">"guardo"</span>;
+
+<span class="kw">const</span> auth = <span class="fn">createAuth</span>({
+  jwt: { secret: <span class="str">"..."</span> },
+  notifier: <span class="kw">new</span> <span class="fn">MultiChannelNotifier</span>({
+    email: <span class="kw">new</span> <span class="fn">SendGridNotifier</span>(),
+    sms:   <span class="kw">new</span> <span class="fn">TwilioNotifier</span>(),
+  }),
+});</pre>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- ERRORS -->
+      <section class="doc-section" id="errors">
+        <h2>Error Handling <a href="#errors" class="h-anchor">#</a></h2>
+        <p class="section-desc">All errors extend <code>Error</code> and have a <code>.name</code> property for easy <code>instanceof</code> checks.</p>
+
+        <table class="doc-table">
+          <thead><tr><th>Class</th><th>Thrown by</th><th>Extra property</th></tr></thead>
+          <tbody>
+            <tr><td>AuthError</td><td><code>auth.auth.*</code> - bad OTP, revoked session, user not found</td><td>-</td></tr>
+            <tr><td>RateLimitError</td><td><code>auth.otp.send()</code> - too many requests</td><td><code>.retryAfterSeconds</code></td></tr>
+            <tr><td>TokenTypeError</td><td><code>auth.jwt.verify*()</code> - wrong token type</td><td>-</td></tr>
+            <tr><td>JsonWebTokenError</td><td><code>auth.jwt.verify*()</code> - invalid signature</td><td>-</td></tr>
+            <tr><td>TokenExpiredError</td><td><code>auth.jwt.verify*()</code> - expired token</td><td>-</td></tr>
+          </tbody>
+        </table>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">typescript</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">import</span> { <span class="prop">AuthError</span>, <span class="prop">RateLimitError</span> } <span class="kw">from</span> <span class="str">"guardo"</span>;
+
+<span class="kw">try</span> {
+  <span class="kw">await</span> auth.auth.<span class="fn">loginWithOtp</span>({ identifier, otp });
+} <span class="kw">catch</span> (err) {
+  <span class="kw">if</span> (err <span class="kw">instanceof</span> <span class="ty">RateLimitError</span>) {
+    res.<span class="fn">status</span>(<span class="num">429</span>).<span class="fn">json</span>({ error: <span class="str">`Retry in ${err.retryAfterSeconds}s`</span> });
+  } <span class="kw">else if</span> (err <span class="kw">instanceof</span> <span class="ty">AuthError</span>) {
+    res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ error: err.message });
+  }
+}</pre>
+        </div>
+      </section>
+
+      <!-- TYPES -->
+      <section class="doc-section" id="types">
+        <h2>TypeScript Types <a href="#types" class="h-anchor">#</a></h2>
+        <p class="section-desc">Key types exported from <code>guardo</code>. All types are fully documented with JSDoc in-editor.</p>
+
+        <table class="doc-table">
+          <thead><tr><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>User</td><td><code>{ id, email?, phone?, role?, ...extra }</code></td></tr>
+            <tr><td>Session</td><td>Full session object with device, ip, timestamps</td></tr>
+            <tr><td>TokenPair</td><td><code>{ accessToken, refreshToken }</code></td></tr>
+            <tr><td>TokenPayload</td><td>Decoded JWT payload with <code>sub</code>, <code>type</code>, <code>sessionId</code></td></tr>
+            <tr><td>LoginResult</td><td><code>{ user, accessToken, refreshToken, sessionId }</code></td></tr>
+            <tr><td>StorageAdapter</td><td>Interface for custom storage backends</td></tr>
+            <tr><td>Notifier</td><td>Interface with single <code>sendOTP(payload)</code> method</td></tr>
+            <tr><td>AuthConfig</td><td>Top-level config passed to <code>createAuth()</code></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- SECURITY -->
+      <section class="doc-section" id="security">
+        <h2>Security Notes <a href="#security" class="h-anchor">#</a></h2>
+
+        <div class="callout callout-tip">
+          <span class="callout-icon">🔒</span>
+          <span>guardo is designed with security-first defaults. Here's what happens under the hood.</span>
+        </div>
+
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:0.875rem;color:var(--text2)">
+            <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+            <span><strong style="color:var(--text)">Hashed OTP storage</strong> - plaintext OTPs are never persisted. SHA-256 hash is stored instead.</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:0.875rem;color:var(--text2)">
+            <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+            <span><strong style="color:var(--text)">Timing-safe comparison</strong> - OTP verification uses <code>crypto.timingSafeEqual</code> to prevent timing attacks.</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:0.875rem;color:var(--text2)">
+            <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+            <span><strong style="color:var(--text)">One-time use</strong> - each OTP is consumed on successful verification and can't be reused.</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:0.875rem;color:var(--text2)">
+            <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+            <span><strong style="color:var(--text)">Attempt limiting</strong> - after 5 failed attempts, the OTP is automatically invalidated.</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:0.875rem;color:var(--text2)">
+            <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+            <span><strong style="color:var(--text)">Refresh token rotation</strong> - every refresh creates a new session, invalidating the old one.</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start;font-size:0.875rem;color:var(--text2)">
+            <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+            <span><strong style="color:var(--text)">TTL-bound sessions</strong> - sessions expire automatically in line with the refresh token lifetime.</span>
+          </li>
+        </ul>
+      </section>
+
+      <hr class="divider">
+
+      <!-- CHANGELOG -->
+      <section class="doc-section" id="changelog">
+        <h2>Changelog <a href="#changelog" class="h-anchor">#</a></h2>
+        <p class="section-desc">All notable changes to guardo. Follows <a href="https://keepachangelog.com" style="color:var(--accent2)">Keep a Changelog</a> format.</p>
+
+        <div id="changelog-container">
+          <!-- Populated dynamically from changelog.json -->
+        </div>
+
+        <div class="callout callout-info">
+          <span class="callout-icon">🗺️</span>
+          <span><strong>Roadmap:</strong> OAuth providers (Google, GitHub), device fingerprinting, risk scoring, and analytics hooks are planned. Watch the <a href="https://github.com/nadun-dilshan" style="color:var(--accent3)">GitHub repo</a> for updates.</span>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <hr class="divider">
+      <footer style="text-align:center;padding:20px 0 40px;color:var(--text3);font-size:0.8rem;">
+        <p>Built by <a href="https://github.com/nadun-dilshan" style="color:var(--accent2);text-decoration:none">@nadun-dilshan</a> · MIT License · <a href="https://www.npmjs.com/package/guardo" style="color:var(--accent2);text-decoration:none">npm</a></p>
+      </footer>
+
+    </div>
+  </main>
+
+</div>
+
+<script>
+// Load changelog from JSON
+async function loadChangelog() {
+  try {
+    const res = await fetch('./changelog.json');
+    const data = await res.json();
+    const container = document.getElementById('changelog-container');
+    
+    const tagMap = {
+      'major': 'tag-feat',
+      'patch': 'tag-patch',
+      'minor': 'tag-patch'
+    };
+
+    const typeMap = {
+      'add': 'ct-add',
+      'fix': 'ct-fix',
+      'chg': 'ct-chg'
+    };
+
+    data.releases.forEach(release => {
+      const item = document.createElement('div');
+      item.className = 'changelog-item';
+      
+      const tagClass = tagMap[release.tag] || 'tag-patch';
+      const changesList = release.changes.map(change => {
+        const typeClass = typeMap[change.type] || 'ct-add';
+        return `<li><span class="change-type ${typeClass}">${change.type}</span> ${change.text}</li>`;
+      }).join('');
+      
+      item.innerHTML = `
+        <div class="changelog-meta">
+          <div class="changelog-version">v${release.version}</div>
+          <div class="changelog-date">${release.date}</div>
+          <span class="changelog-tag ${tagClass}">${release.tag}</span>
+        </div>
+        <div class="changelog-body">
+          <div class="changelog-title">${release.title}</div>
+          <ul>${changesList}</ul>
+        </div>
+      `;
+      container.appendChild(item);
+    });
+  } catch (err) {
+    console.error('Failed to load changelog:', err);
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function setActive(el) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+function switchTab(btn, panelId) {
+  const tabList = btn.closest('.tab-list');
+  const tabs = btn.closest('.tabs');
+  tabList.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  tabs.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyInstall() {
+  navigator.clipboard.writeText('npm install guardo').then(() => {
+    const btn = document.querySelector('.install-copy');
+    btn.textContent = 'copied!';
+    setTimeout(() => btn.textContent = 'copy', 2000);
+  });
+}
+
+function filterNav(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.style.display = item.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+  document.querySelectorAll('.nav-label').forEach(label => {
+    const section = label.closest('.nav-section');
+    const visible = [...section.querySelectorAll('.nav-item')].some(i => i.style.display !== 'none');
+    label.style.display = visible ? '' : 'none';
+  });
+}
+
+// Load changelog on page load
+document.addEventListener('DOMContentLoaded', loadChangelog);
+
+// Active nav on scroll
+const sections = document.querySelectorAll('.doc-section, .hero');
+const navItems = document.querySelectorAll('.nav-item');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navItems.forEach(n => n.classList.remove('active'));
+      const match = document.querySelector(`.nav-item[href="#${e.target.id}"]`);
+      if (match) match.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
