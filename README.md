@@ -3,6 +3,8 @@
 Production-ready authentication engine for **Node.js** and **Next.js**,
 written in TypeScript.
 
+**Last commit (e2f035f):** 2026-05-29 12:49:37 +0530 — feat: add NodemailerNotifier for email OTP notifications and update dependencies
+
 ---
 
 ## What you get
@@ -28,6 +30,8 @@ npm install guardo
 # or
 pnpm add guardo
 ```
+
+> **Note:** Nodemailer is included for email notifications. For Redis support, install `ioredis` separately.
 
 ---
 
@@ -315,9 +319,90 @@ class MongoStore implements StorageAdapter {
 
 ## Notifiers
 
+Out of the box: **Console** (dev) and **Nodemailer** (dev + production). Custom notifiers welcome.
+
 ### Console (default — dev only)
 
-Logs `[guardo] OTP for user@example.com via email: 483920 (expires in 300s)`.
+Simple development notifier that logs OTPs to stdout — useful for local development and tests (does not send real emails/SMS).
+
+```ts
+import { ConsoleNotifier, createAuth } from "guardo";
+
+const auth = createAuth({
+  jwt: { secret: "..." },
+  notifier: new ConsoleNotifier(),
+});
+// Example log: [guardo] OTP for user@example.com via email: 483920 (expires in 300s)
+```
+
+For production use, prefer `NodemailerNotifier`, `SendGridNotifier`, or a custom notifier implementation.
+
+### Nodemailer (email — dev + production)
+
+Send OTP emails via Nodemailer. Two modes:
+- **Ethereal** (no config) — auto-creates a test inbox; emails appear in browser preview
+- **Real SMTP** — connect to Gmail, SendGrid, Resend, or any SMTP provider
+
+#### Ethereal (dev/test)
+
+```ts
+import { NodemailerNotifier, createAuth } from "guardo/notifiers";
+
+const auth = createAuth({
+  jwt: { secret: "..." },
+  notifier: new NodemailerNotifier(),
+  // No smtp config → auto-creates Ethereal test account
+  // Outputs credentials & preview URL to console
+});
+```
+
+Console output:
+```
+┌─────────────────────────────────────────────┐
+│  📬  Ethereal test inbox created              │
+│  User : <generated-email>@ethereal.email    │
+│  Pass : <generated-password>                │
+│  Preview emails at https://ethereal.email   │
+└─────────────────────────────────────────────┘
+```
+
+#### Real SMTP (production)
+
+```ts
+import { NodemailerNotifier, createAuth } from "guardo/notifiers";
+
+const auth = createAuth({
+  jwt: { secret: "..." },
+  notifier: new NodemailerNotifier({
+    smtp: {
+      host: "smtp.gmail.com",        // or sendgrid, resend, etc.
+      port: 587,
+      secure: false,                 // STARTTLS
+      user: process.env.SMTP_USER,   // gmail address or API user
+      pass: process.env.SMTP_PASS,   // gmail app password or API key
+    },
+    from: "noreply@myapp.com",
+    subject: "Your login code",
+  }),
+});
+```
+
+#### Custom email templates
+
+```ts
+const notifier = new NodemailerNotifier({
+  smtp: { host: "...", user: "...", pass: "..." },
+  buildHtml: (code, expiresInSeconds) => `
+    <h2>Sign in to My App</h2>
+    <p>Your code: <strong>${code}</strong></p>
+    <p>Valid for ${Math.round(expiresInSeconds! / 60)} minutes.</p>
+  `,
+  buildText: (code, expiresInSeconds) =>
+    `Sign in code: ${code}\nValid for ${Math.round(expiresInSeconds! / 60)} minutes.`,
+});
+
+const auth = createAuth({ jwt: { secret: "..." }, notifier });
+```
 
 ### Custom Notifier
 
