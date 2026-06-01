@@ -2,60 +2,83 @@
   "name": "guardo",
   "version": "1.0.2",
   "description": "Production-ready authentication engine for Node.js & Next.js",
+
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nadun-dilshan/guardo.git"
+  },
+
+  "homepage": "https://guardo.nadun.me",
+  "bugs": {
+    "url": "https://github.com/nadun-dilshan/guardo/issues"
+  },
+
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs"
     },
     "./adapters": {
+      "types": "./dist/adapters/index.d.ts",
       "require": "./dist/adapters/index.js",
-      "import": "./dist/adapters/index.mjs",
-      "types": "./dist/adapters/index.d.ts"
+      "import": "./dist/adapters/index.mjs"
     },
     "./notifiers": {
+      "types": "./dist/notifiers/index.d.ts",
       "require": "./dist/notifiers/index.js",
-      "import": "./dist/notifiers/index.mjs",
-      "types": "./dist/notifiers/index.d.ts"
+      "import": "./dist/notifiers/index.mjs"
     }
   },
+
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "jest",
     "prepublishOnly": "npm run build"
   },
+
   "keywords": [
     "auth",
+    "authentication",
     "jwt",
     "otp",
     "session",
     "nextjs",
-    "express"
+    "express",
+    "node",
+    "security"
   ],
+
   "license": "MIT",
+
   "dependencies": {
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^8.0.9"
   },
+
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.11.0",
     "@types/nodemailer": "^8.0.0",
     "typescript": "^5.3.3"
   },
+
   "peerDependencies": {
     "express": ">=4.0.0",
     "ioredis": ">=5.0.0",
     "next": ">=13.0.0"
   },
+
   "peerDependenciesMeta": {
     "express": { "optional": true },
     "next": { "optional": true },
     "ioredis": { "optional": true }
   },
+
   "files": [
     "dist",
     "README.md"
