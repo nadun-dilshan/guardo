@@ -11,22 +11,19 @@ export class JwtModule {
   private readonly accessTTL: string;
   private readonly refreshTTL: string;
   private readonly extraClaims: Record<string, unknown>;
+  private readonly algorithm: string;
 
   constructor(config: JwtConfig) {
     if (!config.secret || config.secret.length < 16) {
-      throw new Error(
-        "[guardo] JWT secret must be at least 16 characters."
-      );
+      throw new Error("[guardo] JWT secret must be at least 16 characters.");
     }
     this.secret = config.secret;
     this.accessTTL = config.accessTokenTTL ?? "15m";
     this.refreshTTL = config.refreshTokenTTL ?? "7d";
     this.extraClaims = config.extraClaims ?? {};
+    this.algorithm = config.algorithm ?? "HS256";
   }
 
-  // ── Token issuance ───────────────────────────────────────────
-
-  /** Issue a short-lived access token */
   issueAccessToken(user: User, sessionId?: string): string {
     const payload: Omit<TokenPayload, "iat" | "exp"> = {
       sub: user.id,
@@ -39,10 +36,10 @@ export class JwtModule {
 
     return jwt.sign(payload, this.secret, {
       expiresIn: this.accessTTL,
+      algorithm: this.algorithm as jwt.Algorithm,
     } as jwt.SignOptions);
   }
 
-  /** Issue a long-lived refresh token */
   issueRefreshToken(user: User, sessionId?: string): string {
     const payload: Omit<TokenPayload, "iat" | "exp"> = {
       sub: user.id,
@@ -52,10 +49,10 @@ export class JwtModule {
 
     return jwt.sign(payload, this.secret, {
       expiresIn: this.refreshTTL,
+      algorithm: this.algorithm as jwt.Algorithm,
     } as jwt.SignOptions);
   }
 
-  /** Issue both tokens at once */
   issueTokenPair(user: User, sessionId?: string): TokenPair {
     return {
       accessToken: this.issueAccessToken(user, sessionId),
@@ -63,30 +60,32 @@ export class JwtModule {
     };
   }
 
-  // ── Token verification ───────────────────────────────────────
-
-  /** Verify and decode an access token. Throws on invalid/expired. */
   verifyAccessToken(token: string): TokenPayload {
-    const payload = jwt.verify(token, this.secret) as TokenPayload;
+    const payload = jwt.verify(token, this.secret, {
+      algorithms: [this.algorithm as jwt.Algorithm],
+    }) as TokenPayload;
     if (payload.type !== "access") {
-      throw new TokenTypeError("Expected an access token but received a refresh token.");
+      throw new TokenTypeError(
+        "Expected an access token but received a refresh token.",
+        "TOKEN_TYPE_MISMATCH"
+      );
     }
     return payload;
   }
 
-  /** Verify and decode a refresh token. Throws on invalid/expired. */
   verifyRefreshToken(token: string): TokenPayload {
-    const payload = jwt.verify(token, this.secret) as TokenPayload;
+    const payload = jwt.verify(token, this.secret, {
+      algorithms: [this.algorithm as jwt.Algorithm],
+    }) as TokenPayload;
     if (payload.type !== "refresh") {
-      throw new TokenTypeError("Expected a refresh token but received an access token.");
+      throw new TokenTypeError(
+        "Expected a refresh token but received an access token.",
+        "TOKEN_TYPE_MISMATCH"
+      );
     }
     return payload;
   }
 
-  /**
-   * Safely decode a token without verifying the signature.
-   * Useful for reading the `sub` from an expired token before deciding to refresh.
-   */
   decode(token: string): TokenPayload | null {
     const decoded = jwt.decode(token);
     return decoded as TokenPayload | null;
@@ -96,7 +95,10 @@ export class JwtModule {
 // ── Custom Errors ─────────────────────────────────────────────
 
 export class TokenTypeError extends Error {
-  constructor(message: string) {
+  constructor(
+    message: string,
+    public readonly code?: import("../types").GuardoErrorCode
+  ) {
     super(message);
     this.name = "TokenTypeError";
   }

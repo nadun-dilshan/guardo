@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 //  guardo  ·  core/ratelimit.ts
-//  Sliding-window rate limiter backed by the storage adapter.
+//  Sliding-window rate limiter — per-identifier AND per-IP.
 // ─────────────────────────────────────────────────────────────
 
 import type { StorageAdapter, RateLimitRule } from "../types";
@@ -11,6 +11,8 @@ export class RateLimiter {
     private readonly rules: {
       otpSend: RateLimitRule;
       otpVerify: RateLimitRule;
+      otpSendPerIp: RateLimitRule;
+      otpVerifyPerIp: RateLimitRule;
     }
   ) {}
 
@@ -40,7 +42,6 @@ export class RateLimiter {
 
     const elapsed = (now - window.windowStart) / 1000;
     if (elapsed >= rule.windowSeconds) {
-      // Start a fresh window
       window = { count: 0, windowStart: now };
     }
 
@@ -50,20 +51,38 @@ export class RateLimiter {
 
     const allowed = window.count <= rule.max;
     const remaining = Math.max(0, rule.max - window.count);
-    const resetInSeconds = allowed ? ttl : ttl;
+    const resetInSeconds = ttl;
 
     return { allowed, remaining, resetInSeconds };
   }
 
   async checkOtpSend(
-    identifier: string
+    identifier: string,
+    ip?: string
   ): Promise<{ allowed: boolean; remaining: number; resetInSeconds: number }> {
-    return this.check("otp_send", identifier, this.rules.otpSend);
+    const byId = await this.check("otp_send", identifier, this.rules.otpSend);
+    if (!byId.allowed) return byId;
+
+    if (ip) {
+      const byIp = await this.check("otp_send_ip", ip, this.rules.otpSendPerIp);
+      if (!byIp.allowed) return byIp;
+    }
+
+    return byId;
   }
 
   async checkOtpVerify(
-    identifier: string
+    identifier: string,
+    ip?: string
   ): Promise<{ allowed: boolean; remaining: number; resetInSeconds: number }> {
-    return this.check("otp_verify", identifier, this.rules.otpVerify);
+    const byId = await this.check("otp_verify", identifier, this.rules.otpVerify);
+    if (!byId.allowed) return byId;
+
+    if (ip) {
+      const byIp = await this.check("otp_verify_ip", ip, this.rules.otpVerifyPerIp);
+      if (!byIp.allowed) return byIp;
+    }
+
+    return byId;
   }
 }

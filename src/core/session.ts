@@ -5,15 +5,17 @@
 
 import crypto from "node:crypto";
 import type { StorageAdapter, Session, SessionMeta } from "../types";
+import type { GuardoEventEmitter } from "./events";
 
 const SESSION_KEY = (sessionId: string) => `session:${sessionId}`;
 const USER_SESSIONS_KEY = (userId: string) => `user_sessions:${userId}:`;
+const ALL_SESSIONS_PREFIX = "session:";
 
 export class SessionModule {
   constructor(
     private readonly store: StorageAdapter,
-    /** TTL for sessions in seconds (should match refresh token TTL) */
-    private readonly ttlSeconds: number = 7 * 24 * 60 * 60
+    private readonly ttlSeconds: number = 7 * 24 * 60 * 60,
+    private readonly events?: GuardoEventEmitter
   ) {}
 
   // ── Create ───────────────────────────────────────────────────
@@ -38,7 +40,6 @@ export class SessionModule {
       this.ttlSeconds
     );
 
-    // Also maintain an index of session IDs per user for listing
     await this.store.set(
       `${USER_SESSIONS_KEY(userId)}${sessionId}`,
       sessionId,
@@ -79,9 +80,54 @@ export class SessionModule {
     );
   }
 
+  /**
+   * List all sessions across all users.
+   * Useful for admin dashboards and monitoring.
+   * @param opts.limit  Max sessions to return (default: 100)
+   * @param opts.offset Cursor offset for pagination (default: 0)
+   */
+  async listAll(opts: { limit?: number; offset?: number } = {}): Promise<{
+    sessions: Session[];
+    total: number;
+    hasMore: boolean;
+  }> {
+    const limit = opts.limit ?? 100;
+    const offset = opts.offset ?? 0;
+
+    const allKeys = await this.store.keys(ALL_SESSIONS_PREFIX);
+    const sessions: Session[] = [];
+
+    for (const key of allKeys) {
+      // Only process direct session keys, not the user-index keys
+      if (key.startsWith("session:sess_")) {
+        const raw = await this.store.get(key);
+        if (raw) {
+          try {
+            sessions.push(JSON.parse(raw) as Session);
+          } catch {
+            // skip corrupted
+          }
+        }
+      }
+    }
+
+    sessions.sort(
+      (a, b) =>
+        new Date(b.lastActiveAt).getTime() - new Date(a.lastActiveAt).getTime()
+    );
+
+    const total = sessions.length;
+    const paginated = sessions.slice(offset, offset + limit);
+
+    return {
+      sessions: paginated,
+      total,
+      hasMore: offset + paginated.length < total,
+    };
+  }
+
   // ── Update ───────────────────────────────────────────────────
 
-  /** Touch the `lastActiveAt` timestamp (call this on each authenticated request) */
   async touch(sessionId: string): Promise<void> {
     const session = await this.get(sessionId);
     if (!session) return;
@@ -104,6 +150,11 @@ export class SessionModule {
     await this.store.delete(
       `${USER_SESSIONS_KEY(session.userId)}${sessionId}`
     );
+
+    this.events?.emit("session.revoked", {
+      sessionId,
+      userId: session.userId,
+    });
   }
 
   async revokeAll(userId: string): Promise<number> {
