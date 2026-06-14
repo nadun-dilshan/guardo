@@ -1,0 +1,28 @@
+---
+title: Memory Store
+---
+
+import { Callout } from "nextra/components";
+
+# Storage Adapters
+
+guardo stores OTPs, sessions, and rate-limit windows in a `StorageAdapter`. Swap
+between implementations without changing your auth code.
+
+## In-Memory Store — dev & test only
+
+The default. Data is lost on process restart — perfect for development and
+tests.
+
+```ts
+import { MemoryStore } from "guardo";
+
+const store = new MemoryStore();
+store.clear(); // useful in tests — wipe everything
+```
+
+<Callout type="warning">
+  `MemoryStore` is per-process. Don't use it in production or across multiple
+  server instances — sessions and OTPs won't be shared. Use the
+  [Redis store](/storage/redis) instead.
+</Callout>

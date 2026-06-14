@@ -1,0 +1,91 @@
+---
+title: OTP Module
+---
+
+import { Callout } from "nextra/components";
+
+# OTP Module
+
+Accessed via `auth.otp`. Handles generating, delivering, and verifying one-time
+passwords.
+
+## `otp.send(opts)`
+
+```
+async send(opts: SendOtpOptions): Promise<{ expiresInSeconds: number }>
+```
+
+Generates a fresh OTP, stores it hashed, and delivers it via the configured
+notifier. Calling again before expiry replaces the previous code and resets the
+attempt counter. Throws [`RateLimitError`](/reference/errors) if the send rate
+limit is exceeded.
+
+```ts
+const result = await auth.otp.send({
+  identifier: "user@example.com",
+  channel: "email", // or "sms" — default "email"
+  ip: req.ip, // optional — enables per-IP rate limiting
+});
+// → { expiresInSeconds: 300 }
+```
+
+`SendOtpOptions`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `identifier` | `string` | The user's email address or phone number. |
+| `channel` | `"email" \| "sms"` | Delivery method. Defaults to `"email"`. |
+| `ip` | `string?` | Client IP. When provided, per-IP rate limiting is enforced too. |
+
+## `otp.verify(opts)`
+
+```
+async verify(opts: VerifyOtpOptions): Promise<VerifyOtpResult>
+```
+
+Verifies the user-entered OTP. Consumes it on success (one-time use). After 5
+failed attempts the OTP is automatically invalidated. Unlike `loginWithOtp`,
+this method **does not throw** — it returns a result object.
+
+```ts
+const result = await auth.otp.verify({
+  identifier: "user@example.com",
+  otp: "123456",
+});
+
+// Success:
+// { success: true, verified: true }
+
+// Failure (note the machine-readable `code`):
+// { success: false, verified: false, error: "Invalid OTP. 4 attempt(s) remaining.", code: "OTP_INVALID" }
+// { success: false, verified: false, error: "OTP expired or not found. Request a new code.", code: "OTP_EXPIRED" }
+// { success: false, verified: false, error: "Too many failed attempts. Please request a new OTP.", code: "OTP_MAX_ATTEMPTS" }
+```
+
+`VerifyOtpResult`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | `boolean` | Whether the operation completed without error. |
+| `verified` | `boolean` | Whether the OTP was correct. |
+| `error` | `string?` | Human-readable message on failure. |
+| `code` | `GuardoErrorCode?` | Machine-readable code — see [Error Handling](/reference/errors). |
+
+<Callout type="info">
+  Verification uses `crypto.timingSafeEqual` against the stored SHA-256 hash, so
+  comparison time doesn't leak whether digits matched.
+</Callout>
+
+## `otp.exists(identifier)`
+
+```
+async exists(identifier: string): Promise<boolean>
+```
+
+Check whether a valid (unexpired) OTP exists for an identifier. Useful for
+showing "resend" UI.
+
+```ts
+const pending = await auth.otp.exists("user@example.com");
+// → true or false
+```

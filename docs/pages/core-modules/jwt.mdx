@@ -1,0 +1,55 @@
+---
+title: JWT Module
+---
+
+import { Callout } from "nextra/components";
+
+# JWT Module
+
+Accessed via `auth.jwt`. Low-level token operations. Typically you won't need
+this directly — `auth.auth` handles token issuance and rotation for you.
+
+```ts
+// Issue tokens manually
+const accessToken = auth.jwt.issueAccessToken(user, sessionId);
+const refreshToken = auth.jwt.issueRefreshToken(user, sessionId);
+const { accessToken, refreshToken } = auth.jwt.issueTokenPair(user, sessionId);
+
+// Verify (throws on invalid, expired, or wrong token type)
+const payload = auth.jwt.verifyAccessToken(token);
+const payload = auth.jwt.verifyRefreshToken(token);
+
+// Decode without verifying (e.g. read `sub` from an expired token)
+const payload = auth.jwt.decode(token); // returns null if unparseable
+```
+
+## Methods
+
+| Method | Signature | Notes |
+|--------|-----------|-------|
+| `issueAccessToken` | `(user: User, sessionId?: string) => string` | Embeds `email`, `role`, `sessionId`, `type: "access"`, and any `extraClaims`. |
+| `issueRefreshToken` | `(user: User, sessionId?: string) => string` | Minimal payload: `sub`, `sessionId`, `type: "refresh"`. |
+| `issueTokenPair` | `(user: User, sessionId?: string) => TokenPair` | Both of the above. |
+| `verifyAccessToken` | `(token: string) => TokenPayload` | Throws if the token isn't an access token. |
+| `verifyRefreshToken` | `(token: string) => TokenPayload` | Throws if the token isn't a refresh token. |
+| `decode` | `(token: string) => TokenPayload \| null` | No signature check. |
+
+<Callout type="warning">
+  `verifyAccessToken` / `verifyRefreshToken` throw `TokenTypeError` if you pass
+  the wrong kind of token, and `jsonwebtoken`'s `JsonWebTokenError` /
+  `TokenExpiredError` for invalid signatures or expiry. See
+  [Error Handling](/reference/errors).
+</Callout>
+
+## Asymmetric keys (RS256)
+
+Set `jwt.algorithm` and pass the appropriate key as `jwt.secret`:
+
+```ts
+const auth = createAuth({
+  jwt: {
+    secret: fs.readFileSync("private.pem", "utf8"),
+    algorithm: "RS256",
+  },
+});
+```

@@ -3,6 +3,15 @@ dist
 build
 coverage
 .env
+
+# Next.js / Nextra docs
+.next
+out
+.turbo
+next-env.d.ts
+
+# Claude Code — share settings.json, keep personal overrides local
+.claude/settings.local.json
 .DS_Store
 .idea
 .vscode

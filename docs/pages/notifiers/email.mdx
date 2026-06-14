@@ -1,0 +1,80 @@
+---
+title: Email (Nodemailer)
+---
+
+import { Tabs, Callout } from "nextra/components";
+
+# Nodemailer (Email)
+
+The default notifier. Two modes: **Ethereal** (automatic test inbox, no config)
+or **real SMTP** (Gmail, Resend, SendGrid, etc.).
+
+<Tabs items={["Ethereal (dev)", "Real SMTP (prod)", "Custom Template"]}>
+  <Tabs.Tab>
+    ```ts
+    import { NodemailerNotifier, createAuth } from "guardo";
+
+    // No smtp config → auto-creates an Ethereal test account
+    const auth = createAuth({
+      jwt: { secret: "..." },
+      notifier: new NodemailerNotifier(),
+    });
+    // Outputs a preview URL to the console after sending
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```ts
+    const auth = createAuth({
+      jwt: { secret: "..." },
+      notifier: new NodemailerNotifier({
+        smtp: {
+          host: "smtp.gmail.com", // or sendgrid, resend, etc.
+          port: 587,
+          secure: false, // STARTTLS
+          user: process.env.SMTP_USER!,
+          pass: process.env.SMTP_PASS!,
+        },
+        from: "noreply@myapp.com",
+        subject: "Your login code",
+      }),
+    });
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```ts
+    const notifier = new NodemailerNotifier({
+      smtp: { host: "...", user: "...", pass: "..." },
+      buildHtml: (code, expiresInSeconds) => `
+        <h2>Sign in to My App</h2>
+        <p>Your code: <strong>${code}</strong></p>
+        <p>Valid for ${Math.round(expiresInSeconds! / 60)} minutes.</p>
+      `,
+      buildText: (code, expiresInSeconds) =>
+        `Sign in code: ${code}\nValid for ${Math.round(expiresInSeconds! / 60)} minutes.`,
+    });
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+<Callout type="info">
+  Without a `buildHtml`/`buildText` override, guardo sends a polished default
+  email template. The default `subject` is `"Your verification code"`.
+</Callout>
+
+## `EmailNotifierOptions`
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `smtp` | `SmtpConfig?` | — | SMTP credentials. Omit to use Ethereal in dev. |
+| `from` | `string?` | smtp user → Ethereal address | The "From" address. |
+| `subject` | `string?` | `"Your verification code"` | Email subject line. |
+| `buildHtml` | `(code, expiresInSeconds?) => string` | built-in template | Custom HTML body. |
+| `buildText` | `(code, expiresInSeconds?) => string` | auto-generated | Custom plain-text body. |
+
+`SmtpConfig`: `{ host: string; port?: number; secure?: boolean; user: string; pass: string }`
+(`port` defaults to `587`, `secure` to `false`).
+
+<Callout type="warning">
+  If Ethereal is unreachable (no internet / sandboxed CI), the notifier falls
+  back to printing the OTP to the console so local flows don't break.
+</Callout>
