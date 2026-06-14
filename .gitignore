@@ -14,7 +14,13 @@ next-env.d.ts
 .claude/settings.local.json
 .DS_Store
 .idea
-.vscode
+
+# VS Code — ignore personal settings but share project-level config
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+
 *.log
 *.tsbuildinfo
 *.swp
