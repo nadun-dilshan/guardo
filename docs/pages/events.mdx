@@ -1,0 +1,52 @@
+---
+title: Events
+---
+
+import { Callout } from "nextra/components";
+
+# Events
+
+guardo emits typed lifecycle events you can hook into for audit logging,
+analytics, security alerting, and monitoring. Register handlers via the `events`
+option on `createAuth()`.
+
+```ts filename="auth.ts"
+const auth = createAuth({
+  jwt: { secret: process.env.JWT_SECRET! },
+  events: {
+    "login.success": ({ user, sessionId }) => {
+      audit.write(user.id, "login", { sessionId });
+    },
+    "otp.failed": ({ identifier, reason, attemptsRemaining }) => {
+      metrics.increment("otp.failed", { reason });
+    },
+    "token.reuse_detected": ({ userId, sessionId }) => {
+      alertTeam(`Refresh-token reuse for ${userId} (session ${sessionId})`);
+    },
+  },
+});
+```
+
+<Callout type="info">
+  Handlers are fire-and-forget and wrapped in a try/catch internally — a throwing
+  handler **never** crashes the auth flow. Keep handlers fast (or hand off to a
+  queue); they run inline within the request.
+</Callout>
+
+## Event reference
+
+| Event | Payload |
+|-------|---------|
+| `otp.sent` | `{ identifier, channel, expiresInSeconds }` |
+| `otp.verified` | `{ identifier }` |
+| `otp.failed` | `{ identifier, reason, attemptsRemaining? }` |
+| `login.success` | `{ user, sessionId, meta? }` |
+| `login.failed` | `{ identifier, reason }` |
+| `logout` | `{ sessionId, userId? }` |
+| `logout.all` | `{ userId, sessionsRevoked }` |
+| `token.refreshed` | `{ userId, newSessionId }` |
+| `token.reuse_detected` | `{ userId, sessionId }` |
+| `session.revoked` | `{ sessionId, userId }` |
+
+All payloads are fully typed via the `GuardoEvents` interface, so handler
+arguments are inferred when you write them inline.

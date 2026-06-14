@@ -1,0 +1,50 @@
+---
+title: Installation
+---
+
+import { Tabs, Callout } from "nextra/components";
+
+# Installation
+
+Install guardo from npm. Nodemailer is bundled, so email delivery works out of
+the box. Install `ioredis` separately only if you need Redis in production.
+
+<Tabs items={["npm", "pnpm", "yarn"]}>
+  <Tabs.Tab>
+    ```bash
+    # Core package
+    npm install guardo
+
+    # Optional: Redis adapter for production
+    npm install ioredis
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    pnpm add guardo
+    pnpm add ioredis # optional, for production
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    yarn add guardo
+    yarn add ioredis # optional, for production
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+<Callout type="info">
+  **Peer dependencies:** `express`, `fastify`, `next`, and `ioredis` are all
+  optional. Install only what you use — guardo never imports them unless you call
+  the matching adapter or middleware.
+</Callout>
+
+## Requirements
+
+| Requirement | Version |
+|-------------|---------|
+| Node.js | 18 or newer |
+| TypeScript | 5.x (optional, but types ship with the package) |
+
+guardo is written in TypeScript and ships its own type declarations — no
+`@types/guardo` needed.

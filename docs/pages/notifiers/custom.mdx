@@ -1,0 +1,56 @@
+---
+title: Custom Notifier
+---
+
+# Custom Notifier
+
+Implement the `Notifier` interface — a single `sendOTP` method — to deliver
+codes through any channel (SMS, push, Slack, …).
+
+```ts
+import type { Notifier, NotifyPayload } from "guardo";
+
+class TwilioNotifier implements Notifier {
+  async sendOTP({ to, code, expiresInSeconds }: NotifyPayload) {
+    await twilio.messages.create({
+      to,
+      from: process.env.TWILIO_NUMBER,
+      body: `Your code is ${code}. Expires in ${expiresInSeconds}s.`,
+    });
+  }
+}
+```
+
+## Functional shorthand
+
+```ts
+import { createNotifier } from "guardo";
+
+const notifier = createNotifier(async ({ to, code }) => {
+  console.log(`Send ${code} to ${to}`);
+});
+```
+
+## `BaseNotifier`
+
+Extend `BaseNotifier` to get a `formatMessage(code, expiresInSeconds?)` helper
+for a ready-made human-friendly string:
+
+```ts
+import { BaseNotifier, type NotifyPayload } from "guardo";
+
+class SlackNotifier extends BaseNotifier {
+  async sendOTP(payload: NotifyPayload) {
+    await slack.send(this.formatMessage(payload.code, payload.expiresInSeconds));
+  }
+}
+```
+
+## `NotifyPayload`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `to` | `string` | The recipient identifier (email/phone). |
+| `code` | `string` | The OTP code. |
+| `channel` | `"email" \| "sms"` | The requested channel. |
+| `expiresInSeconds` | `number?` | TTL, so you can mention it in the message. |

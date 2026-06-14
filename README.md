@@ -68,7 +68,9 @@ app.get("/me", auth.middleware.express(), (req, res) => {
 });
 ```
 
-> **In development**, OTPs are printed to the console automatically - no email setup needed.
+> **In development**, with no SMTP config the default notifier creates a throwaway [Ethereal](https://ethereal.email) test inbox and logs a preview URL for each email (falling back to the console if Ethereal is unreachable). Prefer your terminal? Pass `notifier: new ConsoleNotifier()`.
+
+> 📚 **Full documentation:** [guardo.nadun.me](https://guardo.nadun.me)
 
 ---
 
@@ -93,17 +95,27 @@ const auth = createAuth({
   // Storage (default: in-memory)
   store: new RedisStore(redisClient),
 
-  // Notifications (default: console logger)
+  // Notifications (default: NodemailerNotifier — Ethereal inbox in dev)
   notifier: myEmailNotifier,
 
-  // Rate limiting
+  // Rate limiting (per-identifier and per-IP)
   rateLimit: {
-    otpSend:   { max: 5,  windowSeconds: 60 },
-    otpVerify: { max: 10, windowSeconds: 60 },
+    otpSend:        { max: 5,  windowSeconds: 60 },
+    otpVerify:      { max: 10, windowSeconds: 60 },
+    otpSendPerIp:   { max: 20, windowSeconds: 60 },
+    otpVerifyPerIp: { max: 30, windowSeconds: 60 },
   },
 
   // Optional: resolve full user from DB after OTP verification
   resolveUser: async (identifier) => db.users.findByEmail(identifier),
+
+  // Optional: auto-provision when resolveUser returns null
+  onNewUser: async (identifier) => db.users.create({ email: identifier }),
+
+  // Optional: typed lifecycle event handlers
+  events: {
+    "login.success": ({ user }) => audit.log(user.id, "login"),
+  },
 });
 ```
 
@@ -192,6 +204,15 @@ app.delete(
 );
 ```
 
+### Fastify
+
+```ts
+// Register globally…
+fastify.addHook("preHandler", auth.middleware.fastify());
+// …or per route
+fastify.get("/me", { preHandler: auth.middleware.fastify() }, async (req) => req.user);
+```
+
 ### Next.js Edge Middleware
 
 ```ts
@@ -208,6 +229,38 @@ export const GET = auth.middleware.nextjsRoute(async (req, user) => {
   return Response.json({ user });
 });
 ```
+
+### httpOnly Cookie Mode
+
+```ts
+// Enable by passing `cookies` to createAuth()
+const auth = createAuth({ jwt: { secret: "..." }, cookies: { secure: true } });
+
+// After login, set httpOnly cookies instead of returning tokens in the body
+auth.middleware.setTokenCookies(res, accessToken, refreshToken);
+auth.middleware.clearTokenCookies(res); // on logout
+```
+
+---
+
+## Events
+
+Hook into the auth lifecycle for audit logging, analytics, and alerting. Handlers
+are typed and never crash the auth flow.
+
+```ts
+const auth = createAuth({
+  jwt: { secret: "..." },
+  events: {
+    "login.success": ({ user, sessionId }) => audit.write(user.id, "login"),
+    "otp.failed": ({ identifier, reason }) => metrics.inc("otp.failed"),
+    "token.reuse_detected": ({ userId }) => alertTeam(userId),
+  },
+});
+```
+
+Events: `otp.sent`, `otp.verified`, `otp.failed`, `login.success`, `login.failed`,
+`logout`, `logout.all`, `token.refreshed`, `token.reuse_detected`, `session.revoked`.
 
 ---
 
@@ -355,10 +408,42 @@ try {
 
 ---
 
+## Repository layout
+
+The published `guardo` package lives at the repository root. The documentation
+site is a nested workspace.
+
+```
+.
+├── src/          → SDK source (published as dist/)
+├── examples/     → runnable usage examples
+├── docs/         → Nextra documentation site (workspace)
+├── package.json  → the `guardo` package + docs workspace
+├── CHANGELOG.md
+└── LICENSE
+```
+
+```bash
+npm install        # installs the SDK + docs workspace
+npm run build      # compile the SDK to dist/
+npm run typecheck  # type-check without emitting
+npm run docs:dev   # run the docs site at http://localhost:3000
+```
+
+### Releasing
+
+Releases are automated. From the **Actions → Release SDK** workflow, choose a
+version bump (`patch` / `minor` / `major`) and run it. The workflow bumps
+`package.json`, commits and tags, publishes to npm, and cuts a GitHub Release —
+no manual version editing required. (Requires the `NPM_TOKEN` repo secret.)
+
+The docs site deploys automatically to GitHub Pages on every push to `main` that
+touches `docs/`.
+
 ## Contributing
 
-Issues and PRs welcome! See the [GitHub repo](https://github.com/nadun-dilshan) to get started.
+Issues and PRs welcome! See the [GitHub repo](https://github.com/nadun-dilshan/guardo) to get started.
 
 ## License
 
-MIT © [nadun-dilshan](https://github.com/nadun-dilshan)
+[MIT](./LICENSE) © [nadun-dilshan](https://github.com/nadun-dilshan)

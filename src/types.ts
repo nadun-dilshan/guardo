@@ -218,7 +218,7 @@ export interface AuthConfig {
   };
   /** Storage backend — defaults to in-memory */
   store?: StorageAdapter;
-  /** Notification backend — defaults to console logger */
+  /** Notification backend — defaults to NodemailerNotifier (Ethereal inbox in dev) */
   notifier?: Notifier;
   rateLimit?: RateLimitConfig;
   /**

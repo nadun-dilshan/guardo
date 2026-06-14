@@ -1,0 +1,68 @@
+---
+title: Introduction
+---
+
+import { Cards, Callout } from "nextra/components";
+
+# guardo
+
+<p style={{ fontSize: "1.1rem", opacity: 0.8 }}>
+  A complete authentication engine for Node.js and Next.js. OTP login, JWT
+  tokens, multi-device sessions, and middleware — wired together so you don't
+  have to.
+</p>
+
+**Production-Ready · TypeScript · v1.2.0**
+
+```bash
+npm install guardo
+```
+
+A full OTP login flow in three steps — no config needed to try it:
+
+```ts filename="auth.ts"
+import { createAuth } from "guardo";
+
+const auth = createAuth({
+  jwt: { secret: process.env.JWT_SECRET! },
+});
+
+// 1. Send a one-time code
+await auth.otp.send({ identifier: "user@example.com" });
+
+// 2. Verify it and log in
+const { user, accessToken, refreshToken, sessionId } =
+  await auth.auth.loginWithOtp({
+    identifier: "user@example.com",
+    otp: "123456",
+  });
+
+// 3. Protect routes
+app.get("/me", auth.middleware.express(), (req, res) => {
+  res.json(req.user);
+});
+```
+
+## Features
+
+<Cards>
+  <Cards.Card title="📱 OTP Login — email or SMS codes" href="/core-modules/otp" arrow />
+  <Cards.Card title="🎟️ JWT Tokens — access + refresh, with rotation" href="/core-modules/jwt" arrow />
+  <Cards.Card title="💻 Sessions — multi-device, per-device revoke" href="/core-modules/session" arrow />
+  <Cards.Card title="🛡️ Middleware — Express, Fastify & Next.js" href="/middleware/express" arrow />
+  <Cards.Card title="🗄️ Pluggable Storage — Memory or Redis" href="/storage/memory" arrow />
+  <Cards.Card title="🚦 Rate Limiting — per-identifier and per-IP" href="/configuration" arrow />
+  <Cards.Card title="📣 Events — typed lifecycle hooks" href="/events" arrow />
+  <Cards.Card title="🍪 Cookie Mode — httpOnly token transport" href="/middleware/express" arrow />
+</Cards>
+
+<Callout type="info">
+  Only `jwt.secret` is required. Everything else has a sensible default, so you
+  can be running in seconds and harden later.
+</Callout>
+
+## Where to next
+
+- [Installation](/installation) — add guardo to your project
+- [Quick Start](/quickstart) — a complete login flow
+- [Configuration](/configuration) — every option on `createAuth()`

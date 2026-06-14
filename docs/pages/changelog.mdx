@@ -1,0 +1,63 @@
+---
+title: Changelog
+---
+
+import { Callout } from "nextra/components";
+
+# Changelog
+
+All notable changes to guardo. Follows the
+[Keep a Changelog](https://keepachangelog.com) format.
+
+## 1.2.0 — Event-driven architecture & cookie transport
+
+**Added**
+
+- Typed lifecycle **events** (`events` config + `GuardoEvents`) — `login.success`,
+  `otp.failed`, `token.reuse_detected`, and more. See [Events](/events).
+- **httpOnly cookie mode** — `cookies` config plus `setTokenCookies()` /
+  `clearTokenCookies()` middleware helpers.
+- **Fastify** middleware: `auth.middleware.fastify()`.
+- `onNewUser` hook to auto-provision users when `resolveUser` returns `null`.
+- Per-IP rate limiting (`otpSendPerIp`, `otpVerifyPerIp`) via the optional `ip`
+  on `otp.send()`.
+- `session.listAll()` for paginated, cross-user session listing (admin views).
+- Asymmetric JWT signing via `jwt.algorithm` (e.g. `RS256`).
+
+**Changed**
+
+- `VerifyOtpResult` now includes a machine-readable `code` (`GuardoErrorCode`).
+
+## 1.0.1 — Stability & DX improvements
+
+**Fixed**
+
+- Ethereal transport silently falls back to console when no internet is
+  available.
+- `timingSafeEqual` buffer-length mismatch on wrong-length OTP input.
+
+**Changed**
+
+- Export `TokenTypeError` from the main entry point.
+- Improve error messages for revoked sessions.
+
+## 1.0.0 — Initial public release 🎉
+
+**Added**
+
+- `createAuth()` factory with full module wiring.
+- OTP module: generate, hash, send, verify, attempt limiting.
+- JWT module: access + refresh token pair with TTL config.
+- Session module: multi-device sessions with touch & revoke.
+- Express middleware: JWT guard + RBAC `role()`.
+- Next.js Edge middleware + App Router route wrapper.
+- `MemoryStore` and `RedisStore` adapters.
+- `ConsoleNotifier`, `NodemailerNotifier`, `MultiChannelNotifier`.
+- Sliding-window rate limiter for OTP send & verify.
+- Full TypeScript types exported from the main entry.
+
+<Callout type="info">
+  **Roadmap:** OAuth providers (Google, GitHub), device fingerprinting, risk
+  scoring, and analytics hooks are planned. Watch the
+  [GitHub repo](https://github.com/nadun-dilshan/guardo) for updates.
+</Callout>

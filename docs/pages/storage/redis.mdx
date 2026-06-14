@@ -1,0 +1,21 @@
+---
+title: Redis Store
+---
+
+# Redis Store — production recommended
+
+Backed by [ioredis](https://github.com/redis/ioredis). Works across multiple
+server instances. Install `ioredis` separately.
+
+```ts
+import { RedisStore, createAuth } from "guardo";
+import Redis from "ioredis";
+
+const redis = new Redis(process.env.REDIS_URL);
+const store = new RedisStore(redis);
+
+const auth = createAuth({ jwt: { secret: "..." }, store });
+```
+
+`RedisStore` accepts any client implementing the small subset of the ioredis API
+it uses (`set`, `get`, `del`, `keys`), so compatible clients work too.

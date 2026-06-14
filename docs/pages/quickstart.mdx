@@ -1,0 +1,69 @@
+---
+title: Quick Start
+---
+
+import { Callout, Steps } from "nextra/components";
+
+# Quick Start
+
+A full OTP login flow in three steps. No configuration is required to try it —
+in development guardo creates a throwaway [Ethereal](https://ethereal.email)
+test inbox and prints a preview URL for each email (falling back to the console
+if Ethereal is unreachable).
+
+```ts filename="auth.ts"
+import { createAuth } from "guardo";
+
+const auth = createAuth({
+  jwt: { secret: process.env.JWT_SECRET! },
+});
+
+// ─── Step 1: Send OTP ─────────────────────────────────────
+await auth.otp.send({ identifier: "user@example.com" });
+// → OTP delivered to inbox (preview URL printed in dev)
+
+// ─── Step 2: Verify OTP + login ───────────────────────────
+const { user, accessToken, refreshToken, sessionId } =
+  await auth.auth.loginWithOtp({
+    identifier: "user@example.com",
+    otp: "123456",
+    meta: { device: "chrome-mac", ip: req.ip },
+  });
+
+// ─── Step 3: Protect routes ──────────────────────────────
+app.get("/me", auth.middleware.express(), (req, res) => {
+  res.json(req.user); // req.user is automatically populated
+});
+```
+
+<Callout type="info">
+  Want OTPs in your terminal instead of an email inbox? Pass
+  `notifier: new ConsoleNotifier()` to `createAuth()`. See
+  [Notifiers](/notifiers/console).
+</Callout>
+
+## What just happened
+
+<Steps>
+### Send
+
+`auth.otp.send()` generated a 6-digit code, stored only its SHA-256 hash, and
+delivered it through the configured notifier.
+
+### Verify & log in
+
+`auth.auth.loginWithOtp()` verified the code, resolved (or auto-provisioned) the
+user, created a session, and issued an access + refresh token pair.
+
+### Protect
+
+`auth.middleware.express()` validated the `Authorization: Bearer` header on every
+request, attached `req.user` and `req.session`, and refreshed the session's
+`lastActiveAt`.
+</Steps>
+
+## Next steps
+
+- [Configuration](/configuration) — tune TTLs, rate limits, storage, and more
+- [Auth Module](/core-modules/auth) — refresh tokens and logout
+- [Events](/events) — hook into the auth lifecycle for audit logging

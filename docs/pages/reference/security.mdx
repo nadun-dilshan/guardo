@@ -1,0 +1,38 @@
+---
+title: Security Notes
+---
+
+import { Callout } from "nextra/components";
+
+# Security Notes
+
+<Callout type="info">
+  guardo ships security-first defaults. Here's what happens under the hood.
+</Callout>
+
+- **Hashed OTP storage** — plaintext OTPs are never persisted. A SHA-256 hash is
+  stored instead.
+- **Timing-safe comparison** — OTP verification uses `crypto.timingSafeEqual` to
+  prevent timing attacks.
+- **One-time use** — each OTP is consumed on successful verification and can't be
+  reused.
+- **Attempt limiting** — after 5 failed attempts, the OTP is automatically
+  invalidated.
+- **Refresh token rotation** — every refresh creates a new session and revokes
+  the old one.
+- **Refresh-token reuse detection** — replaying a revoked refresh token revokes
+  **all** of the user's sessions.
+- **TTL-bound sessions** — sessions expire automatically in line with the refresh
+  token lifetime.
+- **httpOnly cookie option** — keep tokens out of JS-readable storage with
+  [cookie mode](/middleware/express#httponly-cookie-mode).
+
+## Hardening checklist
+
+- Set a strong `jwt.secret` (≥ 16 chars; guardo refuses shorter). Use a real
+  secret manager in production.
+- Use the [Redis store](/storage/redis) in production so sessions and rate
+  limits are shared across instances.
+- Pass `ip` to `otp.send()` to enable per-IP rate limiting.
+- Wire up the [`token.reuse_detected`](/events) event to alert on stolen tokens.
+- Serve over HTTPS and keep `cookies.secure: true`.

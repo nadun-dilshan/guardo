@@ -1,0 +1,91 @@
+---
+title: Auth Module
+---
+
+import { Callout } from "nextra/components";
+
+# Auth Module
+
+Accessed via `auth.auth`. High-level flows that orchestrate the OTP, JWT, and
+Session modules together.
+
+## `auth.loginWithOtp(opts)`
+
+```
+async loginWithOtp(opts: LoginWithOtpOptions): Promise<LoginResult>
+```
+
+One-shot login: verifies the OTP → resolves (or auto-provisions) the user →
+creates a session → issues an access + refresh token pair. Throws
+[`AuthError`](/reference/errors) if the OTP is invalid or the user can't be
+resolved.
+
+```ts
+const result = await auth.auth.loginWithOtp({
+  identifier: "user@example.com",
+  otp: "123456",
+  meta: {
+    // optional session metadata
+    device: "iPhone 15",
+    ip: "1.2.3.4",
+    userAgent: req.headers["user-agent"],
+  },
+});
+
+// result: {
+//   user:         { id: "123", email: "user@example.com" },
+//   accessToken:  "eyJ...",
+//   refreshToken: "eyJ...",
+//   sessionId:    "sess_abc123",
+// }
+```
+
+<Callout type="info">
+  User resolution order: if `resolveUser` returns a user, it's used. If it
+  returns `null` and `onNewUser` is set, the new user is provisioned. If neither
+  is configured, the identifier itself becomes the user. See
+  [Configuration](/configuration#user-resolution--lifecycle).
+</Callout>
+
+## `auth.refreshTokens(refreshToken)`
+
+```
+async refreshTokens(refreshToken: string): Promise<TokenPair & { sessionId: string }>
+```
+
+Exchange a valid refresh token for a fresh token pair. Uses **token rotation** —
+the old session is revoked and a new one is created.
+
+```ts
+const { accessToken, refreshToken, sessionId } =
+  await auth.auth.refreshTokens(oldRefreshToken);
+```
+
+<Callout type="warning">
+  **Reuse detection:** if the refresh token's session has already been revoked
+  (a sign the token was stolen and replayed), guardo revokes **all** of that
+  user's sessions and throws `AuthError` with code `REFRESH_TOKEN_REUSE`. Handle
+  it by forcing a fresh login.
+</Callout>
+
+## `auth.logout(sessionId)`
+
+```
+async logout(sessionId: string): Promise<void>
+```
+
+Revoke a specific session (single-device logout).
+
+## `auth.logoutAll(userId)`
+
+```
+async logoutAll(userId: string): Promise<number>
+```
+
+Revoke **all** sessions for a user (logout everywhere). Returns the number of
+sessions revoked.
+
+```ts
+await auth.auth.logout("sess_abc123"); // single device
+const count = await auth.auth.logoutAll("user-123"); // → 3 sessions revoked
+```

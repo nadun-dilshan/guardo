@@ -1,0 +1,39 @@
+---
+title: Next.js Middleware
+---
+
+# Next.js Middleware
+
+## Edge Middleware — `auth.middleware.nextjs()`
+
+Protect entire route groups in the Next.js Edge runtime. Export from your
+project-root `middleware.ts`. It checks the access token and returns `401` JSON
+if it's missing or invalid, otherwise lets the request through.
+
+```ts filename="middleware.ts"
+import { createAuth } from "guardo";
+
+const auth = createAuth({ jwt: { secret: process.env.JWT_SECRET! } });
+
+export const middleware = auth.middleware.nextjs();
+
+export const config = {
+  matcher: ["/api/:path*", "/dashboard/:path*"],
+};
+```
+
+## App Router Route Wrapper — `auth.middleware.nextjsRoute()`
+
+Wrap individual App Router route handlers. The handler receives the verified
+`user` as its second argument. The wrapper also validates the session (returning
+`401` if revoked) and resolves the full user via `resolveUser` when configured.
+
+```ts filename="app/api/me/route.ts"
+export const GET = auth.middleware.nextjsRoute(async (req, user) => {
+  return Response.json({ user });
+});
+```
+
+Both helpers support [cookie mode](/middleware/express#httponly-cookie-mode):
+when `cookies` is set on `createAuth()`, tokens are read from the cookie instead
+of the `Authorization` header.
