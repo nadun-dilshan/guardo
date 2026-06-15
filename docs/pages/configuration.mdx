@@ -1,0 +1,119 @@
+---
+title: Configuration
+---
+
+import { Callout } from "nextra/components";
+
+# Configuration
+
+All options you can pass to `createAuth()`. Only `jwt.secret` is required —
+everything else has a sensible default.
+
+```ts filename="auth.ts"
+import { createAuth, RedisStore } from "guardo";
+
+const auth = createAuth({
+  // ─── Required ─────────────────────────────────────────
+  jwt: {
+    secret: "at-least-16-chars",
+    accessTokenTTL: "15m", // default
+    refreshTokenTTL: "7d", // default
+    extraClaims: { iss: "my-app" }, // embedded in every token
+    algorithm: "HS256", // default; use "RS256" for asymmetric keys
+  },
+
+  // ─── OTP ──────────────────────────────────────────────
+  otp: {
+    length: 6, // default
+    expiry: 300, // seconds — default 5 minutes
+  },
+
+  // ─── Storage ──────────────────────────────────────────
+  store: new RedisStore(redisClient), // default: MemoryStore
+
+  // ─── Notifications ────────────────────────────────────
+  notifier: myEmailNotifier, // default: NodemailerNotifier
+
+  // ─── Rate limits ──────────────────────────────────────
+  rateLimit: {
+    otpSend: { max: 5, windowSeconds: 60 }, // per identifier
+    otpVerify: { max: 10, windowSeconds: 60 }, // per identifier
+    otpSendPerIp: { max: 20, windowSeconds: 60 }, // per IP
+    otpVerifyPerIp: { max: 30, windowSeconds: 60 }, // per IP
+  },
+
+  // ─── User resolution ──────────────────────────────────
+  // Called after OTP verification and on every authed request.
+  resolveUser: async (identifier) => db.users.findByEmail(identifier),
+
+  // Called when resolveUser returns null — auto-provision new users.
+  onNewUser: async (identifier) => db.users.create({ email: identifier }),
+
+  // ─── Lifecycle events ─────────────────────────────────
+  events: {
+    "login.success": ({ user }) => audit.log(user.id, "login"),
+    "token.reuse_detected": ({ userId }) => alertTeam(userId),
+  },
+
+  // ─── httpOnly cookie transport (optional) ─────────────
+  cookies: {
+    accessTokenCookie: "guardo_access",
+    refreshTokenCookie: "guardo_refresh",
+    sameSite: "lax",
+    secure: true,
+  },
+});
+```
+
+## Config reference
+
+### `jwt` (required)
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `jwt.secret` | `string` | **required** | Secret key for signing JWTs. Must be at least 16 characters or `createAuth()` throws. |
+| `jwt.accessTokenTTL` | `string` | `"15m"` | Access token lifetime, e.g. `"15m"`, `"1h"`. |
+| `jwt.refreshTokenTTL` | `string` | `"7d"` | Refresh token lifetime, e.g. `"7d"`, `"30d"`. Also bounds session TTL. |
+| `jwt.extraClaims` | `object` | `{}` | Additional fields embedded in every token. |
+| `jwt.algorithm` | `string` | `"HS256"` | Signing algorithm. Use `"RS256"` (etc.) with an asymmetric key in `secret`. |
+
+### `otp`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `otp.length` | `number` | `6` | Length of generated OTP codes. |
+| `otp.expiry` | `number` | `300` | OTP TTL in seconds. |
+
+### Storage & delivery
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `store` | `StorageAdapter` | `MemoryStore` | Where OTPs, sessions, and rate-limit windows are stored. |
+| `notifier` | `Notifier` | `NodemailerNotifier` | How OTPs are delivered. |
+| `email` | `EmailNotifierOptions` | `{}` | Shorthand passed to the default `NodemailerNotifier`. Ignored if you set `notifier`. |
+
+### `rateLimit`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `rateLimit.otpSend` | `RateLimitRule` | `5 / 60s` | Max OTP **send** requests per identifier. |
+| `rateLimit.otpVerify` | `RateLimitRule` | `10 / 60s` | Max OTP **verify** requests per identifier. |
+| `rateLimit.otpSendPerIp` | `RateLimitRule` | `20 / 60s` | Max OTP **send** requests per IP. Only enforced when you pass `ip` to `otp.send()`. |
+| `rateLimit.otpVerifyPerIp` | `RateLimitRule` | `30 / 60s` | Max OTP **verify** requests per IP. |
+
+A `RateLimitRule` is `{ max: number; windowSeconds: number }`.
+
+### User resolution & lifecycle
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `resolveUser` | `(identifier) => Promise<User \| null>` | `undefined` | Return a full `User` from an identifier. Used after OTP verification and in middleware so `req.user` is complete. |
+| `onNewUser` | `(identifier) => Promise<User>` | `undefined` | Called when `resolveUser` returns `null`. Auto-provision and return a new `User`. |
+| `events` | `Partial<GuardoEvents>` | `{}` | Lifecycle event handlers — see [Events](/events). |
+| `cookies` | `CookieOptions` | `undefined` | Enable httpOnly cookie transport — see [Express middleware](/middleware/express). |
+
+<Callout type="warning">
+  If neither `resolveUser` nor `onNewUser` is provided, guardo falls back to
+  treating the identifier itself as the user — `{ id: identifier, email/phone:
+  identifier }`. Fine for prototypes, but wire up `resolveUser` for real apps.
+</Callout>

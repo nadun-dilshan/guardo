@@ -1,6 +1,6 @@
 {
   "name": "guardo",
-  "version": "1.0.3",
+  "version": "1.2.0",
   "description": "Production-ready authentication engine for Node.js & Next.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,25 +16,31 @@
     ".": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.js"
     },
     "./adapters": {
       "types": "./dist/adapters/index.d.ts",
       "require": "./dist/adapters/index.js",
-      "import": "./dist/adapters/index.mjs"
+      "import": "./dist/adapters/index.js"
     },
     "./notifiers": {
       "types": "./dist/notifiers/index.d.ts",
       "require": "./dist/notifiers/index.js",
-      "import": "./dist/notifiers/index.mjs"
+      "import": "./dist/notifiers/index.js"
     }
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "docs:dev": "npm run dev --workspace docs",
+    "docs:build": "npm run build --workspace docs"
   },
+  "workspaces": [
+    "docs"
+  ],
   "keywords": [
     "auth",
     "authentication",
@@ -59,11 +65,15 @@
   },
   "peerDependencies": {
     "express": ">=4.0.0",
+    "fastify": ">=4.0.0",
     "ioredis": ">=5.0.0",
     "next": ">=13.0.0"
   },
   "peerDependenciesMeta": {
     "express": {
+      "optional": true
+    },
+    "fastify": {
       "optional": true
     },
     "next": {

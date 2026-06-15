@@ -1,0 +1,14 @@
+{
+  "// guardo": "Shared editor settings. Commit-message AI (GitHub Copilot) reads the Conventional Commits rules below and from .github/commit-instructions.md.",
+
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "text": "Write the commit message in Conventional Commits format: '<type>(<optional scope>): <description>'. Type must be one of: feat, fix, chore, docs, style, refactor, perf, test, ci, build, revert. Use the imperative mood (e.g. 'add', not 'added' or 'adds'), a lowercase description, no trailing period, and keep the subject under 72 characters. Optionally add a body explaining what and why (blank line first, wrapped ~72 cols) and a footer for issue links like 'Fixes #123'. For breaking changes, append '!' after the type/scope and add a 'BREAKING CHANGE:' footer."
+    },
+    { "file": ".github/commit-instructions.md" }
+  ],
+
+  "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+    { "file": ".github/commit-instructions.md" }
+  ]
+}

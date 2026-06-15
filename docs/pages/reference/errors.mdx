@@ -1,0 +1,65 @@
+---
+title: Error Handling
+---
+
+import { Callout } from "nextra/components";
+
+# Error Handling
+
+All guardo errors extend `Error` and set `.name` for easy `instanceof` checks.
+`AuthError` and `TokenTypeError` also carry a machine-readable `.code`.
+
+```ts
+import { AuthError, RateLimitError } from "guardo";
+
+try {
+  await auth.auth.loginWithOtp({ identifier, otp });
+} catch (err) {
+  if (err instanceof RateLimitError) {
+    res.status(429).json({ error: `Retry in ${err.retryAfterSeconds}s` });
+  } else if (err instanceof AuthError) {
+    res.status(401).json({ error: err.message, code: err.code });
+  }
+}
+```
+
+## Error classes
+
+| Class | Thrown by | Extra property |
+|-------|-----------|----------------|
+| `AuthError` | `auth.auth.*` — bad OTP, revoked session, user not found, refresh-token reuse | `.code?: GuardoErrorCode` |
+| `RateLimitError` | `auth.otp.send()` — too many requests | `.retryAfterSeconds` |
+| `TokenTypeError` | `auth.jwt.verify*()` — wrong token type | `.code?: GuardoErrorCode` |
+| `JsonWebTokenError` | `auth.jwt.verify*()` — invalid signature (from `jsonwebtoken`) | — |
+| `TokenExpiredError` | `auth.jwt.verify*()` — expired token (from `jsonwebtoken`) | — |
+
+`AuthError`, `RateLimitError`, and `TokenTypeError` are exported from the package
+root. `JsonWebTokenError` / `TokenExpiredError` come from the `jsonwebtoken`
+dependency.
+
+<Callout type="info">
+  `auth.otp.verify()` does **not** throw on a bad code — it returns
+  `{ success: false, verified: false, error, code }`. Only `loginWithOtp` turns
+  a failed verification into a thrown `AuthError`.
+</Callout>
+
+## `GuardoErrorCode`
+
+Machine-readable codes attached to `AuthError.code`, `TokenTypeError.code`, and
+`VerifyOtpResult.code`. Middleware `401`/`403` JSON responses also include a
+`code` field.
+
+| Code | Meaning |
+|------|---------|
+| `OTP_EXPIRED` | No valid OTP found for the identifier. |
+| `OTP_INVALID` | OTP didn't match. |
+| `OTP_MAX_ATTEMPTS` | Too many failed attempts; OTP invalidated. |
+| `OTP_RATE_LIMITED` | OTP verify rate limit hit. |
+| `SESSION_REVOKED` | The session backing the token was revoked. |
+| `SESSION_NOT_FOUND` | No authenticated user / session. |
+| `TOKEN_EXPIRED` | Token has expired. |
+| `TOKEN_INVALID` | Token missing or malformed. |
+| `TOKEN_TYPE_MISMATCH` | Access token used where a refresh token was expected, or vice-versa. |
+| `USER_NOT_FOUND` | `resolveUser` returned `null` and no `onNewUser` was set. |
+| `REFRESH_TOKEN_REUSE` | A revoked refresh token was replayed — all sessions revoked. |
+| `FORBIDDEN` | Role check failed. |

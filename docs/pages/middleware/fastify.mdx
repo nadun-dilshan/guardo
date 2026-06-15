@@ -1,0 +1,33 @@
+---
+title: Fastify Middleware
+---
+
+import { Callout } from "nextra/components";
+
+# Fastify Middleware
+
+## `auth.middleware.fastify()`
+
+A Fastify `preHandler` hook that protects routes. It verifies the access token
+(from the `Authorization` header, or the auth cookie in
+[cookie mode](/middleware/express#httponly-cookie-mode)), attaches
+`request.user` and `request.session`, and refreshes the session. On failure it
+replies `401` with a JSON body.
+
+```ts
+// Register globally
+fastify.addHook("preHandler", auth.middleware.fastify());
+
+// …or per route
+fastify.get(
+  "/me",
+  { preHandler: auth.middleware.fastify() },
+  async (request) => request.user,
+);
+```
+
+<Callout type="info">
+  The hook reads cookies via `request.cookies`, which requires the
+  [`@fastify/cookie`](https://github.com/fastify/fastify-cookie) plugin when you
+  use cookie mode. Bearer-header auth needs no extra plugins.
+</Callout>

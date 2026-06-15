@@ -1,0 +1,44 @@
+---
+title: Custom Store
+---
+
+import { Callout } from "nextra/components";
+
+# Custom Store
+
+Implement the `StorageAdapter` interface to use any database (MongoDB,
+DynamoDB, PostgreSQL, etc.).
+
+```ts
+import type { StorageAdapter } from "guardo";
+
+class MongoStore implements StorageAdapter {
+  async set(key: string, value: string, ttlSeconds?: number): Promise<void> {
+    /* ... */
+  }
+  async get(key: string): Promise<string | null> {
+    /* ... */
+  }
+  async delete(key: string): Promise<void> {
+    /* ... */
+  }
+  async keys(prefix: string): Promise<string[]> {
+    /* ... */
+  }
+}
+```
+
+## The interface
+
+| Method | Signature | Notes |
+|--------|-----------|-------|
+| `set` | `(key, value, ttlSeconds?) => Promise<void>` | Persist a value. Honour `ttlSeconds` for automatic expiry. |
+| `get` | `(key) => Promise<string \| null>` | Return the value or `null` if missing/expired. |
+| `delete` | `(key) => Promise<void>` | Remove a key. |
+| `keys` | `(prefix) => Promise<string[]>` | Return every key starting with `prefix`. |
+
+<Callout type="warning">
+  Honour `ttlSeconds` — guardo relies on it to expire OTPs, sessions, and
+  rate-limit windows. If your backend can't expire keys natively, track expiry
+  yourself and filter it out in `get` and `keys`.
+</Callout>

@@ -1,7 +1,16 @@
+# Source & build config (only dist/ is published)
 src
 tests
-.git
-node_modules
+examples
 tsconfig.json
+
+# Docs site
+docs
+
+# Tooling / repo
+.git
 .github
-web
+node_modules
+*.log
+*.tsbuildinfo
+.DS_Store

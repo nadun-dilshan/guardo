@@ -1,0 +1,23 @@
+---
+title: Multi-Channel Notifier
+---
+
+# Multi-Channel Notifier
+
+Route different channels (email / SMS) to different notifier implementations.
+The channel comes from `otp.send({ channel })`.
+
+```ts
+import { MultiChannelNotifier, createAuth } from "guardo";
+
+const auth = createAuth({
+  jwt: { secret: "..." },
+  notifier: new MultiChannelNotifier({
+    email: new SendGridNotifier(),
+    sms: new TwilioNotifier(),
+  }),
+});
+```
+
+If a code is sent on a channel with no registered handler,
+`MultiChannelNotifier` throws — so register every channel you call `send()` with.

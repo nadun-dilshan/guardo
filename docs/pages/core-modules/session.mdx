@@ -1,0 +1,67 @@
+---
+title: Session Module
+---
+
+# Session Module
+
+Accessed via `auth.session`. Multi-device session management backed by the
+storage adapter. Sessions are TTL-bound to the configured `refreshTokenTTL`.
+
+```ts
+// Create a session (sessionId is auto-generated)
+const session = await auth.session.create(userId, {
+  device: "Safari on iPad",
+  ip: "1.2.3.4",
+  userAgent: "Mozilla/5.0...",
+});
+
+// Get one session by ID
+const session = await auth.session.get("sess_abc123");
+
+// List all sessions for a user (newest first)
+const sessions = await auth.session.list(userId);
+
+// Touch: update lastActiveAt (called automatically by middleware)
+await auth.session.touch("sess_abc123");
+
+// Revoke one session
+await auth.session.revoke("sess_abc123");
+
+// Revoke all sessions for a user → returns count
+const n = await auth.session.revokeAll(userId);
+
+// Check validity (used internally for refresh-token reuse detection)
+const ok = await auth.session.isValid("sess_abc123");
+```
+
+## `session.listAll(opts)`
+
+```
+async listAll(opts?: { limit?: number; offset?: number }): Promise<{
+  sessions: Session[];
+  total: number;
+  hasMore: boolean;
+}>
+```
+
+List sessions across **all** users — useful for admin dashboards and
+monitoring. Paginated, newest first.
+
+```ts
+const { sessions, total, hasMore } = await auth.session.listAll({
+  limit: 50, // default 100
+  offset: 0, // default 0
+});
+```
+
+## Session object shape
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sessionId` | `string` | Unique ID, format `sess_{hex}`. |
+| `userId` | `string` | The user this session belongs to. |
+| `device` | `string?` | Device label from session meta. |
+| `ip` | `string?` | IP address from session meta. |
+| `userAgent` | `string?` | User-Agent string. |
+| `createdAt` | `string` | ISO timestamp of creation. |
+| `lastActiveAt` | `string` | ISO timestamp of last touch. |

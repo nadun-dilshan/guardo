@@ -1,0 +1,32 @@
+---
+title: TypeScript Types
+---
+
+# TypeScript Types
+
+Key types exported from `guardo`. Everything ships with JSDoc, so you get
+in-editor docs on hover.
+
+| Type | Shape / description |
+|------|---------------------|
+| `User` | `{ id: string; email?: string; phone?: string; role?: string; [key: string]: unknown }` |
+| `Session` | Full session object — `sessionId`, `userId`, `device?`, `ip?`, `userAgent?`, `createdAt`, `lastActiveAt`. |
+| `SessionMeta` | `{ device?: string; ip?: string; userAgent?: string }` — passed when creating a session. |
+| `TokenPair` | `{ accessToken: string; refreshToken: string }` |
+| `TokenPayload` | Decoded JWT — `sub`, `email?`, `role?`, `sessionId?`, `type: "access" \| "refresh"`, `iat?`, `exp?`. |
+| `LoginResult` | `{ user, accessToken, refreshToken, sessionId }` |
+| `LoginWithOtpOptions` | `{ identifier, otp, meta? }` |
+| `SendOtpOptions` | `{ identifier, channel?, ip? }` |
+| `VerifyOtpOptions` | `{ identifier, otp }` |
+| `VerifyOtpResult` | `{ success, verified, error?, code? }` |
+| `OtpChannel` | `"email" \| "sms"` |
+| `StorageAdapter` | Interface for custom storage backends. |
+| `Notifier` | Interface with a single `sendOTP(payload)` method. |
+| `NotifyPayload` | `{ to, code, channel, expiresInSeconds? }` |
+| `GuardoErrorCode` | Union of machine-readable error codes — see [Error Handling](/reference/errors). |
+| `GuardoEvents` | Map of lifecycle event names to handler signatures — see [Events](/events). |
+| `CookieOptions` | httpOnly cookie configuration. |
+| `AuthConfig` | Top-level config passed to `createAuth()`. |
+
+Type-only helpers `SmtpConfig` and `EmailNotifierOptions` are exported for the
+email notifier as well.
