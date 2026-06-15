@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 //  guardo  ·  core/ratelimit.ts
-//  Sliding-window rate limiter — per-identifier AND per-IP.
+//  Sliding-window rate limiter - per-identifier AND per-IP.
 // ─────────────────────────────────────────────────────────────
 
 import type { StorageAdapter, RateLimitRule } from "../types";
@@ -36,7 +36,7 @@ export class RateLimiter {
       try {
         window = JSON.parse(raw) as Window;
       } catch {
-        /* corrupted entry — reset */
+        /* corrupted entry - reset */
       }
     }
 

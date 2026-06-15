@@ -6,7 +6,7 @@ import { Callout } from "nextra/components";
 
 # Configuration
 
-All options you can pass to `createAuth()`. Only `jwt.secret` is required —
+All options you can pass to `createAuth()`. Only `jwt.secret` is required -
 everything else has a sensible default.
 
 ```ts filename="auth.ts"
@@ -25,7 +25,7 @@ const auth = createAuth({
   // ─── OTP ──────────────────────────────────────────────
   otp: {
     length: 6, // default
-    expiry: 300, // seconds — default 5 minutes
+    expiry: 300, // seconds - default 5 minutes
   },
 
   // ─── Storage ──────────────────────────────────────────
@@ -46,7 +46,7 @@ const auth = createAuth({
   // Called after OTP verification and on every authed request.
   resolveUser: async (identifier) => db.users.findByEmail(identifier),
 
-  // Called when resolveUser returns null — auto-provision new users.
+  // Called when resolveUser returns null - auto-provision new users.
   onNewUser: async (identifier) => db.users.create({ email: identifier }),
 
   // ─── Lifecycle events ─────────────────────────────────
@@ -109,11 +109,11 @@ A `RateLimitRule` is `{ max: number; windowSeconds: number }`.
 |--------|------|---------|-------------|
 | `resolveUser` | `(identifier) => Promise<User \| null>` | `undefined` | Return a full `User` from an identifier. Used after OTP verification and in middleware so `req.user` is complete. |
 | `onNewUser` | `(identifier) => Promise<User>` | `undefined` | Called when `resolveUser` returns `null`. Auto-provision and return a new `User`. |
-| `events` | `Partial<GuardoEvents>` | `{}` | Lifecycle event handlers — see [Events](/events). |
-| `cookies` | `CookieOptions` | `undefined` | Enable httpOnly cookie transport — see [Express middleware](/middleware/express). |
+| `events` | `Partial<GuardoEvents>` | `{}` | Lifecycle event handlers - see [Events](/events). |
+| `cookies` | `CookieOptions` | `undefined` | Enable httpOnly cookie transport - see [Express middleware](/middleware/express). |
 
 <Callout type="warning">
   If neither `resolveUser` nor `onNewUser` is provided, guardo falls back to
-  treating the identifier itself as the user — `{ id: identifier, email/phone:
+  treating the identifier itself as the user - `{ id: identifier, email/phone:
   identifier }`. Fine for prototypes, but wire up `resolveUser` for real apps.
 </Callout>

@@ -38,7 +38,7 @@ class MongoStore implements StorageAdapter {
 | `keys` | `(prefix) => Promise<string[]>` | Return every key starting with `prefix`. |
 
 <Callout type="warning">
-  Honour `ttlSeconds` — guardo relies on it to expire OTPs, sessions, and
+  Honour `ttlSeconds` - guardo relies on it to expire OTPs, sessions, and
   rate-limit windows. If your backend can't expire keys natively, track expiry
   yourself and filter it out in `get` and `keys`.
 </Callout>

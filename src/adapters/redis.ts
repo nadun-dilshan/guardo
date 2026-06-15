@@ -35,7 +35,7 @@ export class RedisStore implements StorageAdapter {
   }
 
   async keys(prefix: string): Promise<string[]> {
-    // KEYS is O(N) — acceptable for moderate datasets.
+    // KEYS is O(N) - acceptable for moderate datasets.
     // For high-traffic apps consider SCAN instead.
     return this.client.keys(`${prefix}*`);
   }

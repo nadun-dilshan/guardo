@@ -20,7 +20,7 @@ export type OtpChannel = "email" | "sms";
 export interface SendOtpOptions {
   /** The user's email address or phone number */
   identifier: string;
-  /** Delivery method — defaults to "email" */
+  /** Delivery method - defaults to "email" */
   channel?: OtpChannel;
   /** Optional IP address for IP-based rate limiting */
   ip?: string;
@@ -63,9 +63,9 @@ export type GuardoErrorCode =
 export interface JwtConfig {
   /** Secret or private key used to sign tokens */
   secret: string;
-  /** Access token lifetime — e.g. "15m", "1h" (default: "15m") */
+  /** Access token lifetime - e.g. "15m", "1h" (default: "15m") */
   accessTokenTTL?: string;
-  /** Refresh token lifetime — e.g. "7d", "30d" (default: "7d") */
+  /** Refresh token lifetime - e.g. "7d", "30d" (default: "7d") */
   refreshTokenTTL?: string;
   /** Extra fields to embed in the JWT payload */
   extraClaims?: Record<string, unknown>;
@@ -202,7 +202,7 @@ export interface CookieOptions {
   path?: string;
   /** sameSite attribute (default: "lax") */
   sameSite?: "strict" | "lax" | "none";
-  /** Secure flag — should be true in production (default: true) */
+  /** Secure flag - should be true in production (default: true) */
   secure?: boolean;
 }
 
@@ -216,13 +216,13 @@ export interface AuthConfig {
     /** Expiry in seconds (default: 300) */
     expiry?: number;
   };
-  /** Storage backend — defaults to in-memory */
+  /** Storage backend - defaults to in-memory */
   store?: StorageAdapter;
-  /** Notification backend — defaults to NodemailerNotifier (Ethereal inbox in dev) */
+  /** Notification backend - defaults to NodemailerNotifier (Ethereal inbox in dev) */
   notifier?: Notifier;
   rateLimit?: RateLimitConfig;
   /**
-   * Shorthand email config — passed straight to NodemailerNotifier.
+   * Shorthand email config - passed straight to NodemailerNotifier.
    * If `notifier` is also set, `notifier` wins.
    */
   email?: import("./notifiers/email").EmailNotifierOptions;
@@ -238,7 +238,7 @@ export interface AuthConfig {
    */
   onNewUser?: (identifier: string) => Promise<User>;
   /**
-   * Event handlers — fired for auth lifecycle events.
+   * Event handlers - fired for auth lifecycle events.
    * Useful for audit logging, analytics, and monitoring.
    */
   events?: Partial<GuardoEvents>;

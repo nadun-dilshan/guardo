@@ -4,7 +4,7 @@ title: Next.js Middleware
 
 # Next.js Middleware
 
-## Edge Middleware — `auth.middleware.nextjs()`
+## Edge Middleware - `auth.middleware.nextjs()`
 
 Protect entire route groups in the Next.js Edge runtime. Export from your
 project-root `middleware.ts`. It checks the access token and returns `401` JSON
@@ -22,7 +22,7 @@ export const config = {
 };
 ```
 
-## App Router Route Wrapper — `auth.middleware.nextjsRoute()`
+## App Router Route Wrapper - `auth.middleware.nextjsRoute()`
 
 Wrap individual App Router route handlers. The handler receives the verified
 `user` as its second argument. The wrapper also validates the session (returning

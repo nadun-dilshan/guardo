@@ -14,5 +14,5 @@ export default withNextra({
   // Trailing slashes keep relative asset paths working on static hosts.
   trailingSlash: true,
   // Served from the custom domain https://guardo.nadun.me/ (root), so no
-  // basePath/assetPrefix — assets resolve at /_next/... from the domain root.
+  // basePath/assetPrefix - assets resolve at /_next/... from the domain root.
 });

@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 //  guardo  ·  adapters/memory.ts
-//  Simple in-memory store — great for development & tests.
+//  Simple in-memory store - great for development & tests.
 //  NOT suitable for production (data is lost on restart).
 // ─────────────────────────────────────────────────────────────
 

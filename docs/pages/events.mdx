@@ -28,7 +28,7 @@ const auth = createAuth({
 ```
 
 <Callout type="info">
-  Handlers are fire-and-forget and wrapped in a try/catch internally — a throwing
+  Handlers are fire-and-forget and wrapped in a try/catch internally - a throwing
   handler **never** crashes the auth flow. Keep handlers fast (or hand off to a
   queue); they run inline within the request.
 </Callout>

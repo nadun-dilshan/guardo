@@ -42,7 +42,7 @@ export class AuthModule {
       );
     }
 
-    // 2. Resolve user — or auto-provision via onNewUser
+    // 2. Resolve user - or auto-provision via onNewUser
     let user: User;
     if (this.resolveUser) {
       const resolved = await this.resolveUser(identifier);
@@ -96,7 +96,7 @@ export class AuthModule {
 
   /**
    * Exchange a valid refresh token for a fresh token pair.
-   * Detects refresh token reuse — if the session is already revoked,
+   * Detects refresh token reuse - if the session is already revoked,
    * ALL user sessions are invalidated (stolen token protection).
    */
   async refreshTokens(
@@ -108,7 +108,7 @@ export class AuthModule {
     if (sessionId) {
       const valid = await this.session.isValid(sessionId);
       if (!valid) {
-        // Refresh token reuse detected — revoke all sessions for safety
+        // Refresh token reuse detected - revoke all sessions for safety
         this.events?.emit("token.reuse_detected", {
           userId: payload.sub,
           sessionId,

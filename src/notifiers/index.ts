@@ -8,7 +8,7 @@ export { NodemailerNotifier } from "./email";
 export type { SmtpConfig, EmailNotifierOptions } from "./email";
 
 // ── Console Notifier ──────────────────────────────────────────
-// Default for development — logs OTPs to stdout instead of
+// Default for development - logs OTPs to stdout instead of
 // actually sending them.
 
 export class ConsoleNotifier implements Notifier {
