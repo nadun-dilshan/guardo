@@ -40,16 +40,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-          cache: "npm"
 
-      # NOTE: `npm install` (not `npm ci`) on purpose.
-      # npm prunes other-platform native binaries (e.g. @next/swc-linux-x64-gnu,
-      # @napi-rs/simple-git-linux-x64-gnu) from the lockfile's packages map when
-      # it's generated on a different OS (npm/cli#4828). `npm ci` installs the
-      # lockfile verbatim and would miss them, crashing `next build` on Linux;
-      # `npm install` re-resolves and fetches the right binaries for the runner.
+      # npm prunes other-platform native binaries (@next/swc-linux-*,
+      # @napi-rs/simple-git-linux-*) from a lockfile generated on macOS
+      # (npm/cli#4828), so `npm ci` can't install them on the Linux runner and
+      # `next build` crashes. Drop the lockfile and let npm re-resolve for this
+      # platform — the workaround npm itself recommends.
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: |
+          rm -f package-lock.json
+          npm install --no-audit --no-fund
 
       - name: Build static site
         run: npm run docs:build
