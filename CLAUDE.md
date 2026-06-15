@@ -75,3 +75,8 @@ single public entry point. Modules:
    for SDK changes, and `npm run docs:build` for docs changes. Report real output.
 10. **Don't commit** unless asked. `dist/`, `docs/out`, `node_modules`, `.next`
     are gitignored — keep them out of commits.
+11. **Commit messages follow Conventional Commits** — see
+    [.github/commit-instructions.md](.github/commit-instructions.md).
+    `<type>(<scope>): <description>` in the imperative mood (`feat`, `fix`,
+    `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `ci`, `build`,
+    `revert`). Breaking changes get a `!` and a `BREAKING CHANGE:` footer.
