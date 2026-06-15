@@ -45,7 +45,7 @@ jobs:
       # @napi-rs/simple-git-linux-*) from a lockfile generated on macOS
       # (npm/cli#4828), so `npm ci` can't install them on the Linux runner and
       # `next build` crashes. Drop the lockfile and let npm re-resolve for this
-      # platform — the workaround npm itself recommends.
+      # platform - the workaround npm itself recommends.
       - name: Install dependencies
         run: |
           rm -f package-lock.json
@@ -64,7 +64,7 @@ jobs:
 
   deploy:
     name: Deploy to GitHub Pages
-    # Deploy only from main (push) or a manual run — never on PRs or dev.
+    # Deploy only from main (push) or a manual run - never on PRs or dev.
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     needs: build
     runs-on: ubuntu-latest

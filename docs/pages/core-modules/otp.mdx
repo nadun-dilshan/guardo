@@ -23,8 +23,8 @@ limit is exceeded.
 ```ts
 const result = await auth.otp.send({
   identifier: "user@example.com",
-  channel: "email", // or "sms" — default "email"
-  ip: req.ip, // optional — enables per-IP rate limiting
+  channel: "email", // or "sms" - default "email"
+  ip: req.ip, // optional - enables per-IP rate limiting
 });
 // → { expiresInSeconds: 300 }
 ```
@@ -45,7 +45,7 @@ async verify(opts: VerifyOtpOptions): Promise<VerifyOtpResult>
 
 Verifies the user-entered OTP. Consumes it on success (one-time use). After 5
 failed attempts the OTP is automatically invalidated. Unlike `loginWithOtp`,
-this method **does not throw** — it returns a result object.
+this method **does not throw** - it returns a result object.
 
 ```ts
 const result = await auth.otp.verify({
@@ -69,7 +69,7 @@ const result = await auth.otp.verify({
 | `success` | `boolean` | Whether the operation completed without error. |
 | `verified` | `boolean` | Whether the OTP was correct. |
 | `error` | `string?` | Human-readable message on failure. |
-| `code` | `GuardoErrorCode?` | Machine-readable code — see [Error Handling](/reference/errors). |
+| `code` | `GuardoErrorCode?` | Machine-readable code - see [Error Handling](/reference/errors). |
 
 <Callout type="info">
   Verification uses `crypto.timingSafeEqual` against the stored SHA-256 hash, so

@@ -24,7 +24,7 @@ otherwise it's the decoded `TokenPayload`.
 
 ## `auth.middleware.role(roles)`
 
-Role-based access control. Must be placed **after** `express()` — it relies on
+Role-based access control. Must be placed **after** `express()` - it relies on
 `req.user` being set first. Responds `403` if the user's role isn't in the
 allowed list. Users without a role default to `"user"`.
 
@@ -70,9 +70,9 @@ auth.middleware.clearTokenCookies(res);
 |-------|------|---------|-------------|
 | `accessTokenCookie` | `string` | `"guardo_access"` | Access-token cookie name. |
 | `refreshTokenCookie` | `string` | `"guardo_refresh"` | Refresh-token cookie name. |
-| `domain` | `string?` | — | Cookie domain. |
+| `domain` | `string?` | - | Cookie domain. |
 | `path` | `string` | `"/"` | Cookie path. |
 | `sameSite` | `"strict" \| "lax" \| "none"` | `"lax"` | SameSite attribute. |
-| `secure` | `boolean` | `true` | Secure flag — keep `true` in production. |
+| `secure` | `boolean` | `true` | Secure flag - keep `true` in production. |
 
 Cookies are always set `httpOnly`.

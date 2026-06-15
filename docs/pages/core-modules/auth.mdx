@@ -53,7 +53,7 @@ const result = await auth.auth.loginWithOtp({
 async refreshTokens(refreshToken: string): Promise<TokenPair & { sessionId: string }>
 ```
 
-Exchange a valid refresh token for a fresh token pair. Uses **token rotation** —
+Exchange a valid refresh token for a fresh token pair. Uses **token rotation** -
 the old session is revoked and a new one is created.
 
 ```ts

@@ -10,12 +10,12 @@ out
 .turbo
 next-env.d.ts
 
-# Claude Code — share settings.json, keep personal overrides local
+# Claude Code - share settings.json, keep personal overrides local
 .claude/settings.local.json
 .DS_Store
 .idea
 
-# VS Code — ignore personal settings but share project-level config
+# VS Code - ignore personal settings but share project-level config
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json

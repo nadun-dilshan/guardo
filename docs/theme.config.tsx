@@ -22,7 +22,7 @@ const config: DocsThemeConfig = {
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta
         name="description"
-        content="guardo — a complete authentication engine for Node.js and Next.js with OTP login, JWT tokens, multi-device sessions, and middleware."
+        content="guardo - a complete authentication engine for Node.js and Next.js with OTP login, JWT tokens, multi-device sessions, and middleware."
       />
       <meta property="og:title" content="guardo · Production-Ready Auth Engine" />
       <meta

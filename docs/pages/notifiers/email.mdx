@@ -65,7 +65,7 @@ or **real SMTP** (Gmail, Resend, SendGrid, etc.).
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `smtp` | `SmtpConfig?` | — | SMTP credentials. Omit to use Ethereal in dev. |
+| `smtp` | `SmtpConfig?` | - | SMTP credentials. Omit to use Ethereal in dev. |
 | `from` | `string?` | smtp user → Ethereal address | The "From" address. |
 | `subject` | `string?` | `"Your verification code"` | Email subject line. |
 | `buildHtml` | `(code, expiresInSeconds?) => string` | built-in template | Custom HTML body. |

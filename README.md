@@ -95,7 +95,7 @@ const auth = createAuth({
   // Storage (default: in-memory)
   store: new RedisStore(redisClient),
 
-  // Notifications (default: NodemailerNotifier — Ethereal inbox in dev)
+  // Notifications (default: NodemailerNotifier - Ethereal inbox in dev)
   notifier: myEmailNotifier,
 
   // Rate limiting (per-identifier and per-IP)
@@ -434,7 +434,7 @@ npm run docs:dev   # run the docs site at http://localhost:3000
 
 Releases are automated. From the **Actions → Release SDK** workflow, choose a
 version bump (`patch` / `minor` / `major`) and run it. The workflow bumps
-`package.json`, commits and tags, publishes to npm, and cuts a GitHub Release —
+`package.json`, commits and tags, publishes to npm, and cuts a GitHub Release -
 no manual version editing required. (Requires the `NPM_TOKEN` repo secret.)
 
 The docs site deploys automatically to GitHub Pages on every push to `main` that
