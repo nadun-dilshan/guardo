@@ -9,13 +9,13 @@ import { Callout } from "nextra/components";
 All notable changes to guardo. Follows the
 [Keep a Changelog](https://keepachangelog.com) format.
 
-## 1.2.0 — Event-driven architecture & cookie transport
+## 1.2.0 - Event-driven architecture & cookie transport
 
 **Added**
 
-- Typed lifecycle **events** (`events` config + `GuardoEvents`) — `login.success`,
+- Typed lifecycle **events** (`events` config + `GuardoEvents`) - `login.success`,
   `otp.failed`, `token.reuse_detected`, and more. See [Events](/events).
-- **httpOnly cookie mode** — `cookies` config plus `setTokenCookies()` /
+- **httpOnly cookie mode** - `cookies` config plus `setTokenCookies()` /
   `clearTokenCookies()` middleware helpers.
 - **Fastify** middleware: `auth.middleware.fastify()`.
 - `onNewUser` hook to auto-provision users when `resolveUser` returns `null`.
@@ -28,7 +28,7 @@ All notable changes to guardo. Follows the
 
 - `VerifyOtpResult` now includes a machine-readable `code` (`GuardoErrorCode`).
 
-## 1.0.1 — Stability & DX improvements
+## 1.0.1 - Stability & DX improvements
 
 **Fixed**
 
@@ -41,7 +41,7 @@ All notable changes to guardo. Follows the
 - Export `TokenTypeError` from the main entry point.
 - Improve error messages for revoked sessions.
 
-## 1.0.0 — Initial public release 🎉
+## 1.0.0 - Initial public release 🎉
 
 **Added**
 

@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 //  guardo  ·  index.ts
-//  Public API surface — everything you need from one import.
+//  Public API surface - everything you need from one import.
 // ─────────────────────────────────────────────────────────────
 
 import { MemoryStore } from "./adapters/memory";

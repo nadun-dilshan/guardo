@@ -160,7 +160,7 @@ export class OtpModule {
       };
     }
 
-    // ✅ Success — consume OTP
+    // ✅ Success - consume OTP
     await this.store.delete(KEY(identifier));
     await this.store.delete(ATTEMPTS_KEY(identifier));
 

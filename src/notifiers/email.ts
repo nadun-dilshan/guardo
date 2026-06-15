@@ -73,9 +73,9 @@ export class NodemailerNotifier implements Notifier {
             return transporter;
           })
           .catch(() => {
-            // Ethereal unreachable (no internet / sandbox) — fall back silently
+            // Ethereal unreachable (no internet / sandbox) - fall back silently
             console.log(
-              "[guardo] Ethereal unavailable — OTPs will be printed to console instead.\n" +
+              "[guardo] Ethereal unavailable - OTPs will be printed to console instead.\n" +
               "                Pass smtp config to send real emails."
             );
             return null; // signals sendOTP to use console fallback

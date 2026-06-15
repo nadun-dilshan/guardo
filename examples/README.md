@@ -1,6 +1,6 @@
 # Examples
 
-Runnable snippets showing common guardo setups. These are illustrative — they
+Runnable snippets showing common guardo setups. These are illustrative - they
 aren't compiled as part of the package build or published to npm.
 
 | File | What it shows |

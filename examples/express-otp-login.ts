@@ -1,5 +1,5 @@
 /**
- * Express OTP login — a complete, minimal flow.
+ * Express OTP login - a complete, minimal flow.
  *
  *   npm install guardo express
  *   ts-node examples/express-otp-login.ts

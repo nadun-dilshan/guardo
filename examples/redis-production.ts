@@ -1,5 +1,5 @@
 /**
- * Production wiring — Redis storage, real SMTP delivery, and lifecycle events.
+ * Production wiring - Redis storage, real SMTP delivery, and lifecycle events.
  *
  *   npm install guardo ioredis
  */
@@ -47,7 +47,7 @@ export async function sendCode(email: string, ip: string) {
     await auth.otp.send({ identifier: email, ip });
   } catch (err) {
     if (err instanceof RateLimitError) {
-      throw new Error(`Slow down — retry in ${err.retryAfterSeconds}s`);
+      throw new Error(`Slow down - retry in ${err.retryAfterSeconds}s`);
     }
     throw err;
   }
