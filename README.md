@@ -20,6 +20,7 @@
 | Feature | Details |
 |---------|---------|
 | **OTP Login** | Generate, deliver, and verify time-limited codes |
+| **OAuth / Social** | Google & GitHub built-in, plus pluggable providers (PKCE + CSRF state) |
 | **JWT Tokens** | Access + refresh token pair with configurable TTLs |
 | **Session Management** | Multi-device sessions with per-session revocation |
 | **Express Middleware** | JWT guard + role-based access in one line |
@@ -159,6 +160,63 @@ const count = await auth.auth.logoutAll("user-123"); // → 3
 
 ---
 
+## OAuth Module - `auth.oauth`
+
+Social login (Google, GitHub, or any OAuth 2.0 / OIDC service) via the
+authorization-code flow with CSRF `state` and PKCE. Only available when you pass
+an `oauth` config. [Full guide →](https://guardo.nadun.me/core-modules/oauth)
+
+```ts
+import { createAuth, GoogleProvider, GithubProvider, OAuth2Provider } from "guardo";
+
+const auth = createAuth({
+  jwt: { secret: process.env.JWT_SECRET! },
+  oauth: {
+    providers: [
+      new GoogleProvider({ clientId: G_ID, clientSecret: G_SECRET }),
+      new GithubProvider({ clientId: GH_ID, clientSecret: GH_SECRET }),
+    ],
+    redirectUri: "https://myapp.com/auth/callback",
+    resolveUser: async (profile) => db.users.findByEmail(profile.email),
+    onNewUser: async (profile) => db.users.create({ email: profile.email }),
+  },
+});
+
+// 1. Send the user to the provider
+app.get("/auth/:provider", async (req, res) => {
+  const { url } = await auth.oauth!.start(req.params.provider);
+  res.redirect(url);
+});
+
+// 2. Handle the callback → session + token pair (same shape as loginWithOtp)
+app.get("/auth/:provider/callback", async (req, res) => {
+  const result = await auth.oauth!.callback(req.params.provider, {
+    code: String(req.query.code),
+    state: String(req.query.state),
+  });
+  auth.middleware.setTokenCookies(res, result.accessToken, result.refreshToken);
+  res.redirect("/dashboard");
+});
+```
+
+**Plug in any other provider** with `OAuth2Provider` - no new release needed:
+
+```ts
+const discord = new OAuth2Provider({
+  id: "discord",
+  clientId: D_ID,
+  clientSecret: D_SECRET,
+  authorizationEndpoint: "https://discord.com/oauth2/authorize",
+  tokenEndpoint: "https://discord.com/api/oauth2/token",
+  userInfoEndpoint: "https://discord.com/api/users/@me",
+  defaultScopes: ["identify", "email"],
+  usePKCE: true,
+  mapProfile: (raw) => ({ id: String(raw.id), email: raw.email as string, raw }),
+});
+```
+
+---
+
 ## JWT Module - `auth.jwt`
 
 ```ts
@@ -260,7 +318,8 @@ const auth = createAuth({
 ```
 
 Events: `otp.sent`, `otp.verified`, `otp.failed`, `login.success`, `login.failed`,
-`logout`, `logout.all`, `token.refreshed`, `token.reuse_detected`, `session.revoked`.
+`logout`, `logout.all`, `token.refreshed`, `token.reuse_detected`, `session.revoked`,
+`oauth.started`, `oauth.success`, `oauth.failed`.
 
 ---
 
@@ -377,7 +436,8 @@ try {
 
 | Error Class | Thrown by | Extra |
 |-------------|-----------|-------|
-| `AuthError` | `auth.auth.*` | - |
+| `AuthError` | `auth.auth.*` | `.code` |
+| `OAuthError` | `auth.oauth.*` | `.code` |
 | `RateLimitError` | `auth.otp.send()` | `.retryAfterSeconds` |
 | `TokenTypeError` | `auth.jwt.verify*()` | - |
 | `JsonWebTokenError` | `auth.jwt.verify*()` | - |
@@ -393,6 +453,7 @@ try {
 - After **5 failed attempts**, the OTP is automatically invalidated
 - Refresh token **rotation** - new session on every refresh
 - Sessions are **TTL-bound** and expire with the refresh token
+- OAuth uses single-use **CSRF `state`** and **PKCE** (S256) where supported
 
 ---
 
@@ -401,7 +462,7 @@ try {
 - [x] OTP + JWT + Sessions
 - [x] Express + Next.js middleware
 - [x] Redis adapter
-- [ ] OAuth providers (Google, GitHub)
+- [x] OAuth providers (Google, GitHub, + pluggable)
 - [ ] Device fingerprinting
 - [ ] Risk scoring
 - [ ] Analytics hooks
