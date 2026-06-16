@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { MemoryStore } from "./adapters/memory";
-import { ConsoleNotifier, NodemailerNotifier } from "./notifiers";
+import { NodemailerNotifier } from "./notifiers";
 import { RateLimiter } from "./core/ratelimit";
 import { OtpModule } from "./core/otp";
 import { JwtModule } from "./core/jwt";
@@ -12,6 +12,7 @@ import { SessionModule } from "./core/session";
 import { AuthModule } from "./core/auth";
 import { MiddlewareModule } from "./middleware";
 import { GuardoEventEmitter } from "./core/events";
+import { OAuthModule } from "./core/oauth";
 import type { AuthConfig } from "./types";
 
 export type {
@@ -33,6 +34,14 @@ export type {
   GuardoEvents,
   CookieOptions,
   AuthConfig,
+  OAuthConfig,
+  OAuthProvider,
+  OAuthTokenResponse,
+  OAuthUserProfile,
+  OAuthStartOptions,
+  OAuthStartResult,
+  OAuthCallbackParams,
+  OAuthLoginResult,
 } from "./types";
 
 // Re-export adapters & notifiers
@@ -47,10 +56,25 @@ export {
 } from "./notifiers";
 export type { SmtpConfig, EmailNotifierOptions } from "./notifiers";
 
+// Re-export OAuth providers
+export {
+  OAuth2Provider,
+  createOAuthProvider,
+  GoogleProvider,
+  GithubProvider,
+} from "./oauth";
+export type {
+  OAuth2ProviderOptions,
+  GoogleProviderOptions,
+  GithubProviderOptions,
+} from "./oauth";
+export { OAuthModule } from "./core/oauth";
+
 // Re-export error classes
 export { AuthError } from "./core/auth";
 export { RateLimitError } from "./core/otp";
 export { TokenTypeError } from "./core/jwt";
+export { OAuthError } from "./core/oauth";
 
 // ── Auth Engine ───────────────────────────────────────────────
 
@@ -60,6 +84,8 @@ export interface AuthEngine {
   session: SessionModule;
   auth: AuthModule;
   middleware: MiddlewareModule;
+  /** OAuth / social login. Present only when `oauth` is configured. */
+  oauth?: OAuthModule;
 }
 
 /**
@@ -126,12 +152,25 @@ export function createAuth(config: AuthConfig): AuthEngine {
     config.cookies
   );
 
+  // ── OAuth (optional) ──────────────────────────────────────────
+  const oauthModule =
+    config.oauth && config.oauth.providers.length > 0
+      ? new OAuthModule({
+          config: config.oauth,
+          store,
+          session: sessionModule,
+          jwt: jwtModule,
+          events,
+        })
+      : undefined;
+
   return {
     otp: otpModule,
     jwt: jwtModule,
     session: sessionModule,
     auth: authModule,
     middleware: middlewareModule,
+    ...(oauthModule && { oauth: oauthModule }),
   };
 }
 
@@ -141,7 +180,7 @@ function parseTTLtoSeconds(ttl: string): number {
   const match = ttl.match(/^(\d+)([smhd])$/);
   if (!match) return 7 * 24 * 60 * 60;
 
-  const value = parseInt(match[1], 10);
+  const value = Number.parseInt(match[1], 10);
   const unit = match[2];
   const multipliers: Record<string, number> = {
     s: 1,

@@ -30,11 +30,12 @@ try {
 | `AuthError` | `auth.auth.*` - bad OTP, revoked session, user not found, refresh-token reuse | `.code?: GuardoErrorCode` |
 | `RateLimitError` | `auth.otp.send()` - too many requests | `.retryAfterSeconds` |
 | `TokenTypeError` | `auth.jwt.verify*()` - wrong token type | `.code?: GuardoErrorCode` |
+| `OAuthError` | `auth.oauth.*` - unknown provider, bad state, exchange/profile failure | `.code?: GuardoErrorCode` |
 | `JsonWebTokenError` | `auth.jwt.verify*()` - invalid signature (from `jsonwebtoken`) | - |
 | `TokenExpiredError` | `auth.jwt.verify*()` - expired token (from `jsonwebtoken`) | - |
 
-`AuthError`, `RateLimitError`, and `TokenTypeError` are exported from the package
-root. `JsonWebTokenError` / `TokenExpiredError` come from the `jsonwebtoken`
+`AuthError`, `RateLimitError`, `TokenTypeError`, and `OAuthError` are exported
+from the package root. `JsonWebTokenError` / `TokenExpiredError` come from the `jsonwebtoken`
 dependency.
 
 <Callout type="info">
@@ -63,3 +64,8 @@ Machine-readable codes attached to `AuthError.code`, `TokenTypeError.code`, and
 | `USER_NOT_FOUND` | `resolveUser` returned `null` and no `onNewUser` was set. |
 | `REFRESH_TOKEN_REUSE` | A revoked refresh token was replayed - all sessions revoked. |
 | `FORBIDDEN` | Role check failed. |
+| `OAUTH_NOT_CONFIGURED` | No `redirectUri` configured or passed to `oauth.start()`. |
+| `OAUTH_PROVIDER_NOT_FOUND` | No provider registered under the given id. |
+| `OAUTH_STATE_INVALID` | Missing, expired, replayed, or mismatched OAuth `state` (CSRF). |
+| `OAUTH_EXCHANGE_FAILED` | The provider's token endpoint rejected the code exchange. |
+| `OAUTH_PROFILE_FAILED` | Fetching the user profile from the provider failed. |

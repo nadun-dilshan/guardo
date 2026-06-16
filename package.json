@@ -27,6 +27,11 @@
       "types": "./dist/notifiers/index.d.ts",
       "require": "./dist/notifiers/index.js",
       "import": "./dist/notifiers/index.js"
+    },
+    "./oauth": {
+      "types": "./dist/oauth/index.d.ts",
+      "require": "./dist/oauth/index.js",
+      "import": "./dist/oauth/index.js"
     }
   },
   "scripts": {

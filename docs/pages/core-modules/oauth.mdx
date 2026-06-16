@@ -1,0 +1,172 @@
+---
+title: OAuth Module
+---
+
+import { Callout } from "nextra/components";
+
+# OAuth Module
+
+Accessed via `auth.oauth`. Adds **social login** (Google, GitHub, or any
+OAuth 2.0 / OpenID Connect service) using the authorization-code flow with CSRF
+`state` protection and PKCE where supported.
+
+<Callout type="info">
+  `auth.oauth` exists **only** when you pass an `oauth` config to `createAuth()`.
+  Without it, `auth.oauth` is `undefined`.
+</Callout>
+
+## Setup
+
+```ts filename="auth.ts"
+import { createAuth, GoogleProvider, GithubProvider } from "guardo";
+
+export const auth = createAuth({
+  jwt: { secret: process.env.JWT_SECRET! },
+  oauth: {
+    providers: [
+      new GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      }),
+      new GithubProvider({
+        clientId: process.env.GITHUB_CLIENT_ID!,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      }),
+    ],
+    redirectUri: "https://myapp.com/auth/callback",
+    // Map the OAuth profile to your own user record:
+    resolveUser: async (profile) => db.users.findByEmail(profile.email),
+    onNewUser: async (profile) =>
+      db.users.create({ email: profile.email, name: profile.name }),
+  },
+});
+```
+
+If you omit `resolveUser`/`onNewUser`, guardo synthesizes a user from the
+profile (`id` = `"<provider>:<profileId>"`) - handy for prototypes.
+
+## The two-step flow
+
+OAuth is a redirect dance. guardo gives you one method per leg.
+
+### 1. `auth.oauth.start(providerId, opts?)`
+
+```
+async start(providerId: string, opts?: OAuthStartOptions): Promise<OAuthStartResult>
+```
+
+Builds the provider's authorization URL and persists a single-use `state`
+(and PKCE verifier). Redirect the user to `url`.
+
+```ts
+// GET /auth/:provider
+app.get("/auth/:provider", async (req, res) => {
+  const { url } = await auth.oauth!.start(req.params.provider);
+  res.redirect(url);
+});
+```
+
+`OAuthStartOptions`: `{ redirectUri?, scopes?, extraParams? }` - override the
+callback URL, request different scopes, or add params like `prompt: "consent"`.
+
+### 2. `auth.oauth.callback(providerId, params, meta?)`
+
+```
+async callback(
+  providerId: string,
+  params: { code: string; state: string },
+  meta?: SessionMeta,
+): Promise<OAuthLoginResult>
+```
+
+Validates `state`, exchanges the `code` for tokens, fetches the profile,
+resolves/provisions the user, opens a session, and issues a token pair - the
+same shape `loginWithOtp` returns, plus `provider`, `isNewUser`, and `profile`.
+
+```ts
+// GET /auth/:provider/callback?code=...&state=...
+app.get("/auth/:provider/callback", async (req, res) => {
+  try {
+    const result = await auth.oauth!.callback(req.params.provider, {
+      code: String(req.query.code),
+      state: String(req.query.state),
+    }, { ip: req.ip, userAgent: req.headers["user-agent"] });
+
+    // Cookie mode:
+    auth.middleware.setTokenCookies(res, result.accessToken, result.refreshToken);
+    res.redirect("/dashboard");
+  } catch (err) {
+    res.status(401).json({ error: (err as Error).message });
+  }
+});
+```
+
+<Callout type="warning">
+  `state` is single-use and short-lived (default 600s). A missing, expired,
+  replayed, or mismatched `state` throws an [`OAuthError`](/reference/errors)
+  with code `OAUTH_STATE_INVALID`. Both legs must use the **same** store, so use
+  a shared `RedisStore` (not `MemoryStore`) across instances in production.
+</Callout>
+
+## Built-in providers
+
+| Provider | Default scopes | PKCE | Notes |
+|----------|----------------|------|-------|
+| `GoogleProvider` | `openid email profile` | ✅ | OIDC userinfo endpoint. |
+| `GithubProvider` | `read:user user:email` | ❌ | Falls back to `/user/emails` for a verified primary email. |
+
+```ts
+new GoogleProvider({ clientId, clientSecret, scopes: ["openid", "email"] });
+new GithubProvider({ clientId, clientSecret });
+```
+
+## Plug in any other provider
+
+Any standard OAuth 2.0 service works with the generic `OAuth2Provider` - no new
+guardo release required.
+
+```ts
+import { OAuth2Provider } from "guardo";
+
+const discord = new OAuth2Provider({
+  id: "discord",
+  clientId: process.env.DISCORD_CLIENT_ID!,
+  clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+  authorizationEndpoint: "https://discord.com/oauth2/authorize",
+  tokenEndpoint: "https://discord.com/api/oauth2/token",
+  userInfoEndpoint: "https://discord.com/api/users/@me",
+  defaultScopes: ["identify", "email"],
+  usePKCE: true,
+  mapProfile: (raw) => ({
+    id: String(raw.id),
+    email: raw.email as string,
+    name: raw.username as string,
+    avatarUrl: `https://cdn.discordapp.com/avatars/${raw.id}/${raw.avatar}.png`,
+    raw,
+  }),
+});
+
+const auth = createAuth({
+  jwt: { secret: process.env.JWT_SECRET! },
+  oauth: { providers: [discord], redirectUri: "https://myapp.com/auth/callback" },
+});
+```
+
+Need a fully custom profile fetch (e.g. multiple API calls)? Pass
+`fetchProfileOverride: (tokens) => Promise<OAuthUserProfile>` instead of
+`userInfoEndpoint` + `mapProfile`. For non-standard flows, implement the
+`OAuthProvider` interface directly.
+
+## Events
+
+Wire `oauth.started`, `oauth.success`, and `oauth.failed` through the `events`
+config - see [Events](/events).
+
+```ts
+events: {
+  "oauth.success": ({ provider, user, isNewUser }) =>
+    audit.write(user.id, isNewUser ? `signup:${provider}` : `login:${provider}`),
+  "oauth.failed": ({ provider, reason }) =>
+    metrics.increment("oauth.failed", { provider }),
+}
+```
