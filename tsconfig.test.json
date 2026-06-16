@@ -1,0 +1,14 @@
+{
+  // Used only by ts-jest. Widens rootDir to cover tests/ alongside src/ and
+  // emits nothing - the production build still uses tsconfig.build.json.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "sourceMap": false,
+    "declaration": false,
+    "declarationMap": false,
+    "types": ["node", "jest"]
+  },
+  "include": ["src/**/*", "tests/**/*"]
+}
