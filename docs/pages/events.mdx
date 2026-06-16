@@ -47,6 +47,9 @@ const auth = createAuth({
 | `token.refreshed` | `{ userId, newSessionId }` |
 | `token.reuse_detected` | `{ userId, sessionId }` |
 | `session.revoked` | `{ sessionId, userId }` |
+| `oauth.started` | `{ provider, state }` |
+| `oauth.success` | `{ provider, user, sessionId, isNewUser }` |
+| `oauth.failed` | `{ provider, reason }` |
 
 All payloads are fully typed via the `GuardoEvents` interface, so handler
 arguments are inferred when you write them inline.

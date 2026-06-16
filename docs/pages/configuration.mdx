@@ -62,6 +62,18 @@ const auth = createAuth({
     sameSite: "lax",
     secure: true,
   },
+
+  // ─── OAuth / social login (optional) ──────────────────
+  oauth: {
+    providers: [
+      new GoogleProvider({ clientId: G_ID, clientSecret: G_SECRET }),
+      new GithubProvider({ clientId: GH_ID, clientSecret: GH_SECRET }),
+    ],
+    redirectUri: "https://myapp.com/auth/callback",
+    resolveUser: async (profile) => db.users.findByEmail(profile.email),
+    onNewUser: async (profile) =>
+      db.users.create({ email: profile.email, name: profile.name }),
+  },
 });
 ```
 
@@ -111,6 +123,17 @@ A `RateLimitRule` is `{ max: number; windowSeconds: number }`.
 | `onNewUser` | `(identifier) => Promise<User>` | `undefined` | Called when `resolveUser` returns `null`. Auto-provision and return a new `User`. |
 | `events` | `Partial<GuardoEvents>` | `{}` | Lifecycle event handlers - see [Events](/events). |
 | `cookies` | `CookieOptions` | `undefined` | Enable httpOnly cookie transport - see [Express middleware](/middleware/express). |
+| `oauth` | `OAuthConfig` | `undefined` | Enable OAuth / social login - see [OAuth module](/core-modules/oauth). |
+
+### `oauth`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `oauth.providers` | `OAuthProvider[]` | **required** | Providers to enable - `GoogleProvider`, `GithubProvider`, or any `OAuth2Provider`. |
+| `oauth.redirectUri` | `string` | `undefined` | Default callback URL. Can be overridden per request in `oauth.start()`. |
+| `oauth.stateTtlSeconds` | `number` | `600` | How long a pending authorization `state` stays valid. |
+| `oauth.resolveUser` | `(profile, providerId) => Promise<User \| null>` | `undefined` | Resolve an app `User` from an OAuth profile. Return `null` to provision via `onNewUser`. |
+| `oauth.onNewUser` | `(profile, providerId) => Promise<User>` | `undefined` | Provision a new `User` when `resolveUser` returns `null`. |
 
 <Callout type="warning">
   If neither `resolveUser` nor `onNewUser` is provided, guardo falls back to

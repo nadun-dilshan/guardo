@@ -9,6 +9,19 @@ import { Callout } from "nextra/components";
 All notable changes to guardo. Follows the
 [Keep a Changelog](https://keepachangelog.com) format.
 
+## 1.3.0 - OAuth / social login
+
+**Added**
+
+- **OAuth module** (`auth.oauth`) - social login via the authorization-code flow
+  with single-use CSRF `state` and PKCE. `oauth.start()` / `oauth.callback()`
+  issue the same session + JWT pair as OTP login. See [OAuth](/core-modules/oauth).
+- Built-in **`GoogleProvider`** and **`GithubProvider`**, plus the generic,
+  pluggable **`OAuth2Provider`** (and `createOAuthProvider()`) for any other
+  OAuth 2.0 / OIDC service.
+- `oauth` config on `createAuth()`, the `oauth.started` / `oauth.success` /
+  `oauth.failed` events, and the `OAuthError` class with `OAUTH_*` error codes.
+
 ## 1.2.0 - Event-driven architecture & cookie transport
 
 **Added**
@@ -57,7 +70,7 @@ All notable changes to guardo. Follows the
 - Full TypeScript types exported from the main entry.
 
 <Callout type="info">
-  **Roadmap:** OAuth providers (Google, GitHub), device fingerprinting, risk
-  scoring, and analytics hooks are planned. Watch the
-  [GitHub repo](https://github.com/nadun-dilshan/guardo) for updates.
+  **Roadmap:** device fingerprinting, risk scoring, and analytics hooks are
+  planned. Watch the [GitHub repo](https://github.com/nadun-dilshan/guardo) for
+  updates.
 </Callout>

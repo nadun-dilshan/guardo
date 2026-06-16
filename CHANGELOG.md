@@ -4,6 +4,28 @@ All notable changes to **guardo** are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com), and this project adheres to
 [Semantic Versioning](https://semver.org).
 
+## [1.3.0] - OAuth / social login
+
+### Added
+
+- **OAuth module** (`auth.oauth`) - social login via the authorization-code
+  flow with single-use CSRF `state` and PKCE (S256). `oauth.start(provider)`
+  builds the redirect URL; `oauth.callback(provider, { code, state })` exchanges
+  the code, resolves/provisions the user, and issues the **same** session +
+  JWT pair as OTP login (`OAuthLoginResult` extends `LoginResult`).
+- Built-in providers: **`GoogleProvider`** (OIDC, PKCE) and **`GithubProvider`**
+  (with `/user/emails` fallback for a verified primary email).
+- **`OAuth2Provider`** - a generic, pluggable provider for any OAuth 2.0 / OIDC
+  service, plus the `createOAuthProvider()` factory. Custom services need no new
+  guardo release.
+- `oauth` config on `createAuth()` (`providers`, `redirectUri`,
+  `stateTtlSeconds`, `resolveUser`, `onNewUser`).
+- OAuth lifecycle events: `oauth.started`, `oauth.success`, `oauth.failed`.
+- `OAuthError` class and `OAUTH_*` error codes (`OAUTH_NOT_CONFIGURED`,
+  `OAUTH_PROVIDER_NOT_FOUND`, `OAUTH_STATE_INVALID`, `OAUTH_EXCHANGE_FAILED`,
+  `OAUTH_PROFILE_FAILED`).
+- New `./oauth` package subpath export for the provider classes.
+
 ## [1.2.0] - Event-driven architecture & cookie transport
 
 ### Added
@@ -54,6 +76,7 @@ All notable changes to **guardo** are documented here. The format is based on
 - Sliding-window rate limiter for OTP send & verify.
 - Full TypeScript types exported from the main entry.
 
+[1.3.0]: https://github.com/nadun-dilshan/guardo/releases/tag/v1.3.0
 [1.2.0]: https://github.com/nadun-dilshan/guardo/releases/tag/v1.2.0
 [1.0.1]: https://github.com/nadun-dilshan/guardo/releases/tag/v1.0.1
 [1.0.0]: https://github.com/nadun-dilshan/guardo/releases/tag/v1.0.0
