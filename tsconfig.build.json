@@ -1,0 +1,10 @@
+{
+  // Production build config. Inherits everything from tsconfig.json but drops
+  // source/declaration maps - they reference src/, which is never published,
+  // so they would only bloat the tarball and point debuggers at missing files.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "sourceMap": false,
+    "declarationMap": false
+  }
+}

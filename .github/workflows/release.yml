@@ -30,9 +30,12 @@ on:
         default: "latest"
         type: string
 
-# Allow pushing the version commit/tag and creating the GitHub Release.
+# contents: push the version commit/tag and create the GitHub Release.
+# id-token: mint the OIDC token npm uses to attach a verified provenance
+# attestation to the published package.
 permissions:
   contents: write
+  id-token: write
 
 # Never run two releases at once.
 concurrency:
@@ -63,6 +66,9 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
 
@@ -82,7 +88,7 @@ jobs:
         run: git push --follow-tags
 
       - name: Publish to npm
-        run: npm publish --access public --tag "${{ inputs.dist_tag }}"
+        run: npm publish --access public --provenance --tag "${{ inputs.dist_tag }}"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
