@@ -4,7 +4,7 @@ All notable changes to **guardo** are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com), and this project adheres to
 [Semantic Versioning](https://semver.org).
 
-## [1.3.0] - OAuth / social login
+## [1.4.0] - OAuth / social login
 
 ### Added
 
@@ -76,7 +76,7 @@ All notable changes to **guardo** are documented here. The format is based on
 - Sliding-window rate limiter for OTP send & verify.
 - Full TypeScript types exported from the main entry.
 
-[1.3.0]: https://github.com/nadun-dilshan/guardo/releases/tag/v1.3.0
+[1.4.0]: https://github.com/nadun-dilshan/guardo/releases/tag/v1.4.0
 [1.2.0]: https://github.com/nadun-dilshan/guardo/releases/tag/v1.2.0
 [1.0.1]: https://github.com/nadun-dilshan/guardo/releases/tag/v1.0.1
 [1.0.0]: https://github.com/nadun-dilshan/guardo/releases/tag/v1.0.0
