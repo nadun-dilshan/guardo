@@ -112,8 +112,8 @@ app.get("/auth/:provider/callback", async (req, res) => {
 
 | Provider | Default scopes | PKCE | Notes |
 |----------|----------------|------|-------|
-| `GoogleProvider` | `openid email profile` | ✅ | OIDC userinfo endpoint. |
-| `GithubProvider` | `read:user user:email` | ❌ | Falls back to `/user/emails` for a verified primary email. |
+| `GoogleProvider` | `openid email profile` | Yes | OIDC userinfo endpoint. |
+| `GithubProvider` | `read:user user:email` | No | Falls back to `/user/emails` for a verified primary email. |
 
 ```ts
 new GoogleProvider({ clientId, clientSecret, scopes: ["openid", "email"] });
