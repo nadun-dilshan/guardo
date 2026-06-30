@@ -95,6 +95,7 @@ const auth = createAuth({
 |--------|------|---------|-------------|
 | `otp.length` | `number` | `6` | Length of generated OTP codes. |
 | `otp.expiry` | `number` | `300` | OTP TTL in seconds. |
+| `otp.exposeCode` | `boolean` | `false` | Return the plaintext code from `otp.send()` (as `code`) for tests. **Never enable in production.** |
 
 ### Storage & delivery
 

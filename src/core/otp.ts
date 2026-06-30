@@ -8,6 +8,7 @@ import type {
   StorageAdapter,
   Notifier,
   SendOtpOptions,
+  SendOtpResult,
   VerifyOtpOptions,
   VerifyOtpResult,
 } from "../types";
@@ -21,6 +22,8 @@ interface OtpModuleOptions {
   notifier: Notifier;
   rateLimiter?: RateLimiter;
   events?: GuardoEventEmitter;
+  /** Return the plaintext code from `send()` - test/dev only (default: false) */
+  exposeCode?: boolean;
 }
 
 const KEY = (identifier: string) => `otp:${identifier}`;
@@ -35,6 +38,7 @@ export class OtpModule {
   private readonly notifier: Notifier;
   private readonly rateLimiter?: RateLimiter;
   private readonly events?: GuardoEventEmitter;
+  private readonly exposeCode: boolean;
 
   constructor(opts: OtpModuleOptions) {
     this.length = opts.length;
@@ -43,6 +47,7 @@ export class OtpModule {
     this.notifier = opts.notifier;
     this.rateLimiter = opts.rateLimiter;
     this.events = opts.events;
+    this.exposeCode = opts.exposeCode ?? false;
   }
 
   private generate(): string {
@@ -59,7 +64,7 @@ export class OtpModule {
    * Generate and send a fresh OTP to the identifier.
    * Supports per-identifier and per-IP rate limiting.
    */
-  async send(opts: SendOtpOptions): Promise<{ expiresInSeconds: number }> {
+  async send(opts: SendOtpOptions): Promise<SendOtpResult> {
     const { identifier, channel = "email", ip } = opts;
 
     if (this.rateLimiter) {
@@ -91,7 +96,10 @@ export class OtpModule {
       expiresInSeconds: this.expiry,
     });
 
-    return { expiresInSeconds: this.expiry };
+    return {
+      expiresInSeconds: this.expiry,
+      ...(this.exposeCode && { code }),
+    };
   }
 
   /**
