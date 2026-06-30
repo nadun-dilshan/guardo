@@ -26,6 +26,16 @@ export interface SendOtpOptions {
   ip?: string;
 }
 
+export interface SendOtpResult {
+  /** Seconds until the sent OTP expires */
+  expiresInSeconds: number;
+  /**
+   * The plaintext OTP - present ONLY when `otp.exposeCode` is enabled in
+   * `createAuth()`. Intended for automated tests; never enable in production.
+   */
+  code?: string;
+}
+
 export interface VerifyOtpOptions {
   /** The same identifier used when sending */
   identifier: string;
@@ -56,6 +66,7 @@ export type GuardoErrorCode =
   | "TOKEN_TYPE_MISMATCH"
   | "USER_NOT_FOUND"
   | "REFRESH_TOKEN_REUSE"
+  | "INVALID_ARGUMENT"
   | "FORBIDDEN"
   | "OAUTH_NOT_CONFIGURED"
   | "OAUTH_PROVIDER_NOT_FOUND"
@@ -351,6 +362,12 @@ export interface AuthConfig {
     length?: number;
     /** Expiry in seconds (default: 300) */
     expiry?: number;
+    /**
+     * Return the plaintext code in `otp.send()`'s result (as `code`) so tests
+     * can read it without scraping the notifier output.
+     * **Test/dev only - never enable in production** (default: false).
+     */
+    exposeCode?: boolean;
   };
   /** Storage backend - defaults to in-memory */
   store?: StorageAdapter;

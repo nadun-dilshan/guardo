@@ -15,7 +15,7 @@ if Ethereal is unreachable).
 import { createAuth } from "guardo";
 
 const auth = createAuth({
-  jwt: { secret: process.env.JWT_SECRET! },
+  jwt: { secret: process.env.JWT_SECRET! }, // must be at least 16 characters
 });
 
 // ─── Step 1: Send OTP ─────────────────────────────────────
@@ -32,9 +32,18 @@ const { user, accessToken, refreshToken, sessionId } =
 
 // ─── Step 3: Protect routes ──────────────────────────────
 app.get("/me", auth.middleware.express(), (req, res) => {
-  res.json(req.user); // req.user is automatically populated
+  // Without `resolveUser`, req.user is the decoded JWT payload:
+  // { sub, email?, sessionId?, type, iat, exp }
+  res.json(req.user);
 });
 ```
+
+<Callout type="warning">
+  By default `req.user` is the **decoded token payload** (`sub`, `email?`,
+  `sessionId`, `type`, `iat`, `exp`) - not the `user` object returned by
+  `loginWithOtp()`. Configure [`resolveUser`](/configuration) to make
+  `req.user` your full `User` instead.
+</Callout>
 
 <Callout type="info">
   Want OTPs in your terminal instead of an email inbox? Pass

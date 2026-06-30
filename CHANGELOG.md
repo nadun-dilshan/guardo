@@ -4,6 +4,44 @@ All notable changes to **guardo** are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com), and this project adheres to
 [Semantic Versioning](https://semver.org).
 
+## [1.5.0] - Safer call signatures, test ergonomics & dependency security
+
+### Added
+
+- **`otp.exposeCode`** config flag (default `false`) - returns the plaintext
+  `code` in `otp.send()`'s result so automated tests can read the OTP without
+  scraping notifier output. **Test/dev only - never enable in production.**
+- New exported **`SendOtpResult`** type (`{ expiresInSeconds; code? }`), now the
+  return type of `otp.send()`.
+- `INVALID_ARGUMENT` error code (`GuardoErrorCode`).
+
+### Changed
+
+- `auth.logout()`, `auth.refreshTokens()` and `auth.logoutAll()` now throw an
+  `AuthError` with code `INVALID_ARGUMENT` when called with a non-string
+  argument, instead of silently no-op'ing. Previously `logout({ sessionId })`
+  (the natural guess given `loginWithOtp`'s options object) left the session
+  active and the access token usable, with no error thrown.
+- `otp.send()` now returns `SendOtpResult` instead of an inline
+  `{ expiresInSeconds: number }`. The runtime shape is unchanged unless
+  `otp.exposeCode` is enabled.
+
+### Security
+
+- Upgraded **nodemailer** to `^9.0.1` to clear high-severity advisory
+  **GHSA-p6gq-j5cr-w38f** (the message-level `raw` option bypassed
+  `disableFileAccess` / `disableUrlAccess`, enabling arbitrary file read and
+  SSRF). Bundled by default via the email notifier, so it previously shipped
+  transitively to every consumer. `@types/nodemailer` bumped to `^7`.
+
+### Docs
+
+- Documented the **16-character minimum** on `jwt.secret` in the Quick Start so
+  short test secrets no longer trigger a surprising crash.
+- Clarified that `req.user` is the decoded JWT payload (`sub`, `email?`,
+  `sessionId`, `type`, `iat`, `exp`) unless `resolveUser` is configured.
+- Bumped the homepage version badge to match the published release.
+
 ## [1.3.0] - OAuth / social login
 
 ### Added
