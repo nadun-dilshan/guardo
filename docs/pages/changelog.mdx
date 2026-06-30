@@ -9,6 +9,26 @@ import { Callout } from "nextra/components";
 All notable changes to guardo. Follows the
 [Keep a Changelog](https://keepachangelog.com) format.
 
+## 1.5.0 - Safer call signatures, test ergonomics & dependency security
+
+**Added**
+
+- **`otp.exposeCode`** config (default `false`) - returns the plaintext `code`
+  from `otp.send()` (new `SendOtpResult` type) so tests can read the OTP without
+  scraping notifier output. **Test/dev only.** See [OTP](/core-modules/otp).
+- `INVALID_ARGUMENT` error code.
+
+**Changed**
+
+- `logout()`, `refreshTokens()` and `logoutAll()` now throw `AuthError`
+  (`INVALID_ARGUMENT`) when passed a non-string argument instead of silently
+  doing nothing - e.g. `logout({ sessionId })` no longer leaves the session live.
+
+**Security**
+
+- Upgraded **nodemailer** to `^9.0.1` to clear high-severity advisory
+  **GHSA-p6gq-j5cr-w38f** - it ships by default via the email notifier.
+
 ## 1.3.0 - OAuth / social login
 
 **Added**
