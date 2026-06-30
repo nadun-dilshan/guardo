@@ -24,6 +24,7 @@ export type {
   LoginResult,
   LoginWithOtpOptions,
   SendOtpOptions,
+  SendOtpResult,
   VerifyOtpOptions,
   VerifyOtpResult,
   StorageAdapter,
@@ -131,6 +132,7 @@ export function createAuth(config: AuthConfig): AuthEngine {
     notifier,
     rateLimiter,
     events,
+    exposeCode: config.otp?.exposeCode,
   });
 
   const sessionTtl = parseTTLtoSeconds(config.jwt.refreshTokenTTL ?? "7d");

@@ -12,7 +12,7 @@ passwords.
 ## `otp.send(opts)`
 
 ```
-async send(opts: SendOtpOptions): Promise<{ expiresInSeconds: number }>
+async send(opts: SendOtpOptions): Promise<SendOtpResult>
 ```
 
 Generates a fresh OTP, stores it hashed, and delivers it via the configured
@@ -36,6 +36,29 @@ const result = await auth.otp.send({
 | `identifier` | `string` | The user's email address or phone number. |
 | `channel` | `"email" \| "sms"` | Delivery method. Defaults to `"email"`. |
 | `ip` | `string?` | Client IP. When provided, per-IP rate limiting is enforced too. |
+
+`SendOtpResult`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `expiresInSeconds` | `number` | Seconds until the sent OTP expires. |
+| `code` | `string?` | The plaintext code - **only** present when `otp.exposeCode` is enabled in `createAuth()`. |
+
+### Reading the code in tests
+
+By default the code is never returned - it only reaches the configured notifier.
+For automated tests, enable `otp.exposeCode` so `send()` returns the plaintext
+`code` directly instead of having to scrape notifier output:
+
+```ts
+const auth = createAuth({
+  jwt: { secret: process.env.JWT_SECRET! },
+  otp: { exposeCode: true }, // TEST/DEV ONLY - never enable in production
+});
+
+const { code } = await auth.otp.send({ identifier: "user@example.com" });
+await auth.auth.loginWithOtp({ identifier: "user@example.com", otp: code! });
+```
 
 ## `otp.verify(opts)`
 

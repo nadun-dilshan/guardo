@@ -12,7 +12,7 @@ import { Cards, Callout } from "nextra/components";
   have to.
 </p>
 
-**Production-Ready · TypeScript · v1.2.0**
+**Production-Ready · TypeScript · v1.4.0**
 
 ```bash
 npm install guardo
@@ -39,6 +39,7 @@ const { user, accessToken, refreshToken, sessionId } =
 
 // 3. Protect routes
 app.get("/me", auth.middleware.express(), (req, res) => {
+  // req.user is the decoded JWT payload unless `resolveUser` is configured
   res.json(req.user);
 });
 ```

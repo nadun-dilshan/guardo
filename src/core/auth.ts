@@ -102,6 +102,13 @@ export class AuthModule {
   async refreshTokens(
     refreshToken: string
   ): Promise<TokenPair & { sessionId: string }> {
+    if (typeof refreshToken !== "string") {
+      throw new AuthError(
+        "refreshTokens(refreshToken) expects a refresh-token string, e.g. refreshTokens(result.refreshToken).",
+        "INVALID_ARGUMENT"
+      );
+    }
+
     const payload = this.jwt.verifyRefreshToken(refreshToken);
 
     const sessionId = payload.sessionId as string | undefined;
@@ -144,6 +151,13 @@ export class AuthModule {
   // ── Logout ────────────────────────────────────────────────────
 
   async logout(sessionId: string): Promise<void> {
+    if (typeof sessionId !== "string") {
+      throw new AuthError(
+        "logout(sessionId) expects a session-ID string, e.g. logout(result.sessionId).",
+        "INVALID_ARGUMENT"
+      );
+    }
+
     const session = await this.session.get(sessionId);
     await this.session.revoke(sessionId);
     this.events?.emit("logout", {
@@ -153,6 +167,13 @@ export class AuthModule {
   }
 
   async logoutAll(userId: string): Promise<number> {
+    if (typeof userId !== "string") {
+      throw new AuthError(
+        "logoutAll(userId) expects a user-ID string, e.g. logoutAll(result.user.id).",
+        "INVALID_ARGUMENT"
+      );
+    }
+
     const count = await this.session.revokeAll(userId);
     this.events?.emit("logout.all", { userId, sessionsRevoked: count });
     return count;
